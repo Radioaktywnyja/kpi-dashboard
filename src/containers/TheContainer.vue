@@ -13,19 +13,26 @@
       </div>
       <TheFooter/>
     </CWrapper>
+    <LoadSpinner v-if="loadingData" />
   </div>
 </template>
 
 <script>
 import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
+import LoadSpinner from '../components/LoadSpinner'
+import { mapState } from 'vuex'
 
 export default {
   name: 'TheContainer',
   components: {
     TheHeader,
-    TheFooter
-  }
+    TheFooter,
+    LoadSpinner
+  },
+  computed: mapState({
+    loadingData: state => state.kpiData.loading,
+  })
 }
 </script>
 
