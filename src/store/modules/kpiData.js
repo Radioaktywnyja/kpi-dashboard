@@ -46,29 +46,41 @@ export const mutations = {
 
 // actions
 export const actions = {
-  async loadTeams ({ commit }) {
-    await axios.get('http://192.168.0.108:8055/items/teams?access_token=token123').then(result => {
+  async loadTeams ({ state, commit, rootState }) {
+    await axios.get('items/teams', 
+      { params: 
+        { access_token: rootState.auth.user.token } 
+      }).then(result => {
       commit('SET_TEAMS', result.data.data);
     }).catch(error => {
       throw new Error(`API ${error}`);
     });
   },
-  async loadOwners ({ commit }) {
-    await axios.get('http://192.168.0.108:8055/items/owners?access_token=token123').then(result => {
+  async loadOwners ({ state, commit, rootState }) {
+    await axios.get('items/owners', 
+    { params: 
+      { access_token: rootState.auth.user.token } 
+    }).then(result => {
       commit('SET_OWNERS', result.data.data);
     }).catch(error => {
       throw new Error(`API ${error}`);
     });
   },
-  async loadKpis ({ commit }) {
-    await axios.get('http://192.168.0.108:8055/items/kpis?access_token=token123').then(result => {
+  async loadKpis ({ state, commit, rootState }) {
+    await axios.get('items/kpis', 
+    { params: 
+      { access_token: rootState.auth.user.token } 
+    }).then(result => {
       commit('SET_KPIS', result.data.data);
     }).catch(error => {
       throw new Error(`API ${error}`);
     });
   },
-  async loadValues ({ commit }) {
-    await axios.get('http://192.168.0.108:8055/items/values?access_token=token123').then(result => {
+  async loadValues ({ state, commit, rootState }) {
+    await axios.get('items/values', 
+    { params: 
+      { access_token: rootState.auth.user.token } 
+    }).then(result => {
       commit('SET_VALUES', result.data.data);
     }).catch(error => {
       throw new Error(`API ${error}`);

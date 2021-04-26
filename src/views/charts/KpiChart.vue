@@ -44,11 +44,21 @@ export default {
     kpiValues() {
       return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1);
     },
-    startDate() {
-      return this.dateRange[0].toISOString().split('T')[0];
+    startDate: {
+      get(){
+        return this.dateRange[0] ? this.dateRange[0].toISOString().split('T')[0] : null;
+      },
+      set(newDate) {
+        return newDate
+      }
     },
-    endDate() {
-      return this.dateRange[1].toISOString().split('T')[0];
+    endDate: {
+      get(){
+        return this.dateRange[1] ? this.dateRange[1].toISOString().split('T')[0] : null;
+      },
+      set(newDate) {
+        return newDate
+      }
     },
     rangedData() {
       return (!this.startDate && !this.endDate) ? this.kpiValues : this.kpiValues.filter((item) => {

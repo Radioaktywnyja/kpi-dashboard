@@ -38,6 +38,7 @@
     "@coreui/vue": "^3.2.7",
     "@coreui/vue-chartjs": "^1.0.6",
     "axios": "^0.21.1",
+    "dotenv": "^8.2.0",
     "regenerator-runtime": "^0.13.7",
     "vue": "~2.6.12",
     "vue-router": "^3.4.9",

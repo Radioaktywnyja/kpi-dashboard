@@ -45,7 +45,7 @@ export default {
   metaInfo() {
     return { title: this.$t("home") };
   },
-  mounted() {
+  created() {
     this.$store.dispatch('kpiData/loadTeams');
     this.$store.dispatch('kpiData/loadOwners');
     this.$store.dispatch('kpiData/loadKpis');
