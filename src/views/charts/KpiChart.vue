@@ -81,8 +81,8 @@ export default {
     },
     showPeriod() {
       switch (this.kpiData.frequency) {
-        case 'Monthly': return 180;
-        case 'Weekly': return 90;
+        case 'monthly': return 180;
+        case 'weekly': return 90;
         default: return 30;
       }
     },
