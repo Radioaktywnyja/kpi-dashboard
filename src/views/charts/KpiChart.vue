@@ -76,6 +76,10 @@ export default {
     minVal() {
       return Math.min(...this.values, this.kpiData.target);
     },
+    avgVal() {
+      let valuesArr = this.values
+      return valuesArr.reduce((a,b) => a + b ,0) / valuesArr.length
+    },
     dates() {
       return this.rangedData.map(item => item.date);
     },
@@ -95,11 +99,14 @@ export default {
     dataset () {
       const brandInfo = getStyle('info') || '#20a8d8'
       const brandDanger = getStyle('danger') || '#f72b29'
+      const brandSuccess = getStyle('success') || '#28825b'
 
       const target = []
+      const average = []
 
       for (let i = 0; i <= this.values.length; i++) {
         target.push(this.kpiData.target)
+        average.push(this.avgVal)
       }
 
       return [
@@ -111,6 +118,19 @@ export default {
           borderWidth: 1,
           borderDash: [8, 5],
           data: target,
+          type: 'line',
+          xAxisID: 'targetAxis',
+          pointRadius: this.chartType == 'CChartBar' ? 0 : 4,
+          hoverRadius: this.chartType == 'CChartBar' ? 0 : 4
+        },
+        {
+          label: 'KPI average',
+          backgroundColor: 'transparent',
+          borderColor: brandSuccess,
+          pointHoverBackgroundColor: brandSuccess,
+          borderWidth: 1,
+          borderDash: [8, 5],
+          data: average,
           type: 'line',
           xAxisID: 'targetAxis',
           pointRadius: this.chartType == 'CChartBar' ? 0 : 4,
