@@ -39,7 +39,9 @@ export default {
       return this.getKpiByTeam(id)
     },
     getOwner(id) {
-      return this.getOwnerById(id).name
+      if (this.getOwnerById(id)) {
+        return this.getOwnerById(id).name
+      }
     }
   },
   metaInfo() {
