@@ -78,7 +78,7 @@ export default {
     },
     avgVal() {
       let valuesArr = this.values
-      return valuesArr.reduce((a,b) => a + b ,0) / valuesArr.length
+      return Math.round((valuesArr.reduce((a,b) => a + b ,0) / valuesArr.length) * 100) / 100
     },
     dates() {
       return this.rangedData.map(item => item.date);
