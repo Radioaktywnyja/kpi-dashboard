@@ -10,6 +10,7 @@ const Dashboard = () => import('@/views/Dashboard')
 
 // Views - Pages
 const Login = () => import('@/views/pages/Login')
+const Forms = () => import('@/views/pages/Forms')
 
 // Users
 const Users = () => import('@/views/users/Users')
@@ -65,6 +66,12 @@ function configRoutes () {
             }
           ]
         },
+        {
+          path: 'forms',
+          name: 'Forms',
+          meta: {requiresAuth: true},
+          component: Forms
+        }
       ]
     },
     {

@@ -23,8 +23,7 @@
       <CBadge color="info" class="mfs-auto">{{ noticeCount }}</CBadge>
     </CDropdownItem>
     <CDropdownItem>
-      <CIcon name="cil-task" /> Forms
-      <CBadge color="danger" class="mfs-auto"></CBadge>
+      <CLink to="/forms"><CIcon name="cil-task" /> Forms</CLink>
     </CDropdownItem>
     <CDropdownHeader
       tag="div"

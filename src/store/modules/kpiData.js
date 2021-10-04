@@ -41,50 +41,65 @@ export const mutations = {
   },
   SET_LOADING (state) {
     state.loading = !state.loading
-  }
+  },
+  ADD_TEAMS (state, data) {
+    state.teams.push(data)
+  },
+  ADD_OWNERS (state, data) {
+    state.owners.push(data)
+  },
+  ADD_KPIS (state, data) {
+    state.kpis.push(data)
+  },
+  ADD_VALUES (state, data) {
+    state.values.push(data)
+  },
+  ADD_MULTIPLE_TEAMS (state, data) {
+    state.teams.push(...data)
+  },
+  ADD_MULTIPLE_OWNERS (state, data) {
+    state.owners.push(...data)
+  },
+  ADD_MULTIPLE_KPIS (state, data) {
+    state.kpis.push(...data)
+  },
+  ADD_MULTIPLE_VALUES (state, data) {
+    state.values.push(...data)
+  },
 }
 
 // actions
 export const actions = {
-  async loadTeams ({ state, commit, rootState }) {
-    await axios.get('items/teams', 
+  async loadState({ commit, rootState }, payload) {
+    const target = 'items/' + payload;
+    const mutation = 'SET_' + payload.toUpperCase();
+    await axios.get(target, 
       { params: 
         { access_token: rootState.auth.user.token } 
       }).then(result => {
-      commit('SET_TEAMS', result.data.data);
+      commit(mutation, result.data.data);
     }).catch(error => {
       throw new Error(`API ${error}`);
     });
   },
-  async loadOwners ({ state, commit, rootState }) {
-    await axios.get('items/owners', 
-    { params: 
-      { access_token: rootState.auth.user.token } 
-    }).then(result => {
-      commit('SET_OWNERS', result.data.data);
-    }).catch(error => {
-      throw new Error(`API ${error}`);
-    });
-  },
-  async loadKpis ({ state, commit, rootState }) {
-    await axios.get('items/kpis', 
-    { params: 
-      { access_token: rootState.auth.user.token } 
-    }).then(result => {
-      commit('SET_KPIS', result.data.data);
-    }).catch(error => {
-      throw new Error(`API ${error}`);
-    });
-  },
-  async loadValues ({ state, commit, rootState }) {
-    await axios.get('items/values', 
-    { params: 
-      { access_token: rootState.auth.user.token } 
-    }).then(result => {
-      commit('SET_VALUES', result.data.data);
-    }).catch(error => {
-      throw new Error(`API ${error}`);
-    });
+  async addState ({ commit, rootState }, payload) {
+    let mutation = '';
+    const target = 'items/' + payload.name;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + rootState.auth.user.token 
+    }
+    await axios.post(target, payload.data, { headers })
+      .then(result => {
+        if (Array.isArray(result.data.data)) {
+          mutation = 'ADD_MULTIPLE_' + payload.name.toUpperCase();
+        } else {
+          mutation = 'ADD_' + payload.name.toUpperCase();
+        }
+        commit(mutation, result.data.data);
+      }).catch(error => {
+        throw new Error(`API ${error}`);
+      });
   },
   toggleLoading ({ commit }) {
     commit('SET_LOADING');

@@ -48,10 +48,10 @@ export default {
     return { title: this.$t("home") };
   },
   created() {
-    this.$store.dispatch('kpiData/loadTeams');
-    this.$store.dispatch('kpiData/loadOwners');
-    this.$store.dispatch('kpiData/loadKpis');
-    this.$store.dispatch('kpiData/loadValues');
+    this.$store.dispatch('kpiData/loadState', 'teams');
+    this.$store.dispatch('kpiData/loadState', 'owners');
+    this.$store.dispatch('kpiData/loadState', 'kpis');
+    this.$store.dispatch('kpiData/loadState', 'values');
   },
 }
 </script>
