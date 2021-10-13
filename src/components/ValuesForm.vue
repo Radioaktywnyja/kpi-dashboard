@@ -6,17 +6,22 @@
       </CCardHeader>
 
       <CCardBody>
-        <CDataTable v-if="kpiValues.length"
+        <CDataTable
           striped
           :items="kpiValues"
           :fields="fields"
           :items-per-page="5"
           :active-page="1"
           :pagination="{ doubleArrows: false, align: 'center'}"
+          :noItemsView="{ noResults: 'No filtering results available', noItems: 'No values for this KPI' }"
         >
+        <template #actions="{item}">
+          <ActionsTd type="values" :item="item" @editItem="editItem" />
+        </template>
         </CDataTable>
 
-        <span class="font-weight-bold mb-2 d-block">Add new Values</span>
+        <span v-if="!isEdit" class="font-weight-bold mb-2 d-block">Add new Values</span>
+        <span v-if="isEdit" class="font-weight-bold mb-2 d-block">Edit Value</span>
         <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in rowsCount" :key="n">
           <CCol sm="5" class="px-2">
             <CInput v-if="index == 0" label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[0].date" class="m-0" />
@@ -25,7 +30,7 @@
           <CCol sm="5" class="px-2">
             <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="m-0" />
           </CCol>
-          <CCol sm="1" class="p-2 d-flex">
+          <CCol v-if="!isEdit" sm="1" class="p-2 d-flex">
             <CButton color="secondary" size="sm" class="mr-2" @click.prevent="addValue">+</CButton>
             <CButton v-if="index != 0" color="secondary" size="sm" @click.prevent="reduceValue">-</CButton>
           </CCol>
@@ -41,15 +46,18 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import ActionsTd from './ActionsTd.vue'
 
 export default {
+  components: { ActionsTd },
   name: 'ValuesForm',
   props: ['kpi_id'],
   data () {
     return {
       fields: [
         { key: 'date' },
-        { key: 'value' }
+        { key: 'value' },
+        { key: 'actions', label: '' }
       ],
       rowsCount: 1,
       horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
@@ -59,13 +67,15 @@ export default {
           value: 0,
           kpi_id: this.kpi_id
         }
-      ]
+      ],
+      isEdit: false
     }
   },
   computed: {
     ...mapGetters({
       getKpiById: 'kpiData/getKpiById',
-      getValuesByKpi: 'kpiData/getValuesByKpi'
+      getValuesByKpi: 'kpiData/getValuesByKpi',
+      getValueById: 'kpiData/getValueById'
     }),
     kpiData() {
       return this.getKpiById(this.kpi_id);
@@ -74,7 +84,11 @@ export default {
       return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date > a.date ? 1 : -1);
     },
     storePayload() {
-      return { name: 'values', data: this.storeFormData }
+      if (this.isEdit) {
+        return { name: 'values', data: this.storeFormData[0] }
+      } else {
+        return { name: 'values', data: this.storeFormData }
+      }
     },
     lastDate() {
       return this.storeFormData[0].date;
@@ -94,6 +108,7 @@ export default {
       this.storeFormData.pop()
     },
     reset() {
+      this.isEdit = false
       this.rowsCount = 1
       this.storeFormData = [
         {
@@ -117,10 +132,29 @@ export default {
       return lastDate.toISOString().split('T')[0]
     },
     storeValues() {
-      this.$store.dispatch('kpiData/addState', this.storePayload)
-        .then(() => {
-          this.reset()
-        });
+      if (this.isEdit) {
+        this.$store.dispatch('kpiData/updateState', this.storePayload)
+          .then(() => {
+            this.reset()
+          });
+      } else {
+        this.$store.dispatch('kpiData/addState', this.storePayload)
+          .then(() => {
+            this.reset()
+          });
+      }
+    },
+    editItem(id) {
+      this.isEdit = true
+      let targetValue = this.getValueById(id)
+      this.storeFormData = [
+        {
+          date: targetValue.date,
+          value: targetValue.value,
+          kpi_id: targetValue.kpi_id,
+          id: targetValue.id
+        }
+      ]
     }
   },
   created() {

@@ -6,18 +6,23 @@
       </CCardHeader>
 
       <CCardBody>
-        <CDataTable v-if="owners.length"
+        <CDataTable
           striped
           :items="owners"
           :fields="fields"
+          :noItemsView="{ noResults: 'No filtering results available', noItems: 'There are no owners' }"
         >
+        <template #actions="{item}">
+          <ActionsTd type="owners" :item="item" @editItem="editItem" />
+        </template>
         </CDataTable>
       </CCardBody>
     </CCard>
 
     <CCard>
       <CCardHeader class="font-weight-bold">
-        Add new Owner
+        <span v-if="!isEdit">Add new Owner</span>
+        <span v-else>Edit Owner</span>
       </CCardHeader>
 
       <CCardBody>
@@ -33,34 +38,54 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
+import ActionsTd from './ActionsTd.vue'
 export default {
+    components: { ActionsTd },
     name: 'OwnersForm',
     data() {
       return {
         fields: [
           { key: 'name' },
+          { key: 'actions', label: '' }
         ],
         storeFormData: {
           name: ""
-        }
+        },
+        isEdit: false
       }
     },
     computed: {
       ...mapState({owners: state => state.kpiData.owners}),
+      ...mapGetters({
+        getOwnerById: 'kpiData/getOwnerById'
+      }),
       storePayload() {
         return { name: 'owners', data: this.storeFormData }
       }
     },
     methods: {
       reset() {
+        this.isEdit = false
         this.storeFormData = {
           name: ""
         }
       },
       storeOwner() {
-        this.$store.dispatch('kpiData/addState', this.storePayload)
+         if (this.isEdit) {
+          this.$store.dispatch('kpiData/updateState', this.storePayload)
+        } else {
+          this.$store.dispatch('kpiData/addState', this.storePayload)
+        }
         this.reset()
+      },
+      editItem(id) {
+        this.isEdit = true
+        let targetOwner = this.getOwnerById(id)
+        this.storeFormData = {
+          name: targetOwner.name,
+          id: targetOwner.id
+        }
       }
     }
 }

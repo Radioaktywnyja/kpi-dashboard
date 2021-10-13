@@ -6,18 +6,23 @@
       </CCardHeader>
 
       <CCardBody>
-        <CDataTable v-if="kpis.length"
+        <CDataTable
           striped
           :items="kpis"
           :fields="fields"
+          :noItemsView="{ noResults: 'No filtering results available', noItems: 'No kpis for this team' }"
         >
+        <template #actions="{item}">
+          <ActionsTd type="kpis" :item="item" @editItem="editItem" />
+        </template>
         </CDataTable>
       </CCardBody>
     </CCard>
 
     <CCard>
       <CCardHeader class="font-weight-bold">
-        Add new KPI
+        <span v-if="!isEdit">Add new KPI</span>
+        <span v-else>Edit KPI</span>
       </CCardHeader>
 
       <CCardBody>
@@ -50,17 +55,20 @@
 <script>
 import { mapState } from 'vuex'
 import { mapGetters } from 'vuex'
+import ActionsTd from './ActionsTd.vue'
 export default {
+    components: { ActionsTd },
     name: 'KPIsForm',
     props: ['team_id'],
     data() {
       return {
         fields: [
           { key: 'name' },
-          { key: 'owner' },
+          { key: 'ownerName', label: 'owner' },
           { key: 'frequency' },
           { key: 'unit' },
-          { key: 'target' }
+          { key: 'target' },
+          { key: 'actions', label: '' }
         ],
         horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
         frequencyOptions: ['daily', 'weekly', 'monthly'],
@@ -71,20 +79,22 @@ export default {
           team_id: this.team_id,
           target: "",
           unit: ""
-        }
+        },
+        isEdit: false
       }
     },
     computed: {
       ...mapGetters({
         getKpiByTeam: 'kpiData/getKpiByTeam',
-        getOwnerById: 'kpiData/getOwnerById'
+        getOwnerById: 'kpiData/getOwnerById',
+        getKpiById: 'kpiData/getKpiById'
       }),
       ...mapState({owners: state => state.kpiData.owners}),
       kpis() {
         let that = this
         return this.getKpiByTeam(this.team_id).map(function(kpi) {
           if (that.getOwnerById(kpi.owner)) {
-            kpi.owner = that.getOwnerById(kpi.owner).name
+            kpi.ownerName = that.getOwnerById(kpi.owner).name
           }
           return kpi
         })
@@ -103,6 +113,7 @@ export default {
     },
     methods: {
       reset() {
+        this.isEdit = false
         this.storeFormData = {
           name: "",
           frequency: "",
@@ -113,8 +124,25 @@ export default {
         }
       },
       storeKpi() {
-        this.$store.dispatch('kpiData/addState', this.storePayload)
+        if (this.isEdit) {
+          this.$store.dispatch('kpiData/updateState', this.storePayload)
+        } else {
+          this.$store.dispatch('kpiData/addState', this.storePayload)
+        }
         this.reset()
+      },
+      editItem(id) {
+        this.isEdit = true
+        let targetKpi = this.getKpiById(id)
+        this.storeFormData = {
+          name: targetKpi.name,
+          frequency: targetKpi.frequency,
+          owner: targetKpi.owner,
+          team_id: targetKpi.team_id,
+          target: targetKpi.target,
+          unit: targetKpi.unit,
+          id: targetKpi.id
+        }
       }
     }
 }
