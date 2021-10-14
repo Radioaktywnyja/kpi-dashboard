@@ -61,17 +61,31 @@ export const mutations = {
 
 // actions
 export const actions = {
-  async loadState({ commit, rootState }, payload) {
-    const target = 'items/' + payload;
-    await axios.get(target, 
-      { params: 
-        { access_token: rootState.auth.user.token } 
-      }).then(result => {
-        commit('SET_ITEMS', {item: payload, data: result.data.data});
-      }).catch(error => {
-        throw new Error(`API ${error}`);
-      });
+  async initState({ commit, rootState }) {
+    const items = ['teams', 'owners', 'kpis', 'values'];
+    items.map(async stateName => {
+      let target = 'items/' + stateName;
+      await axios.get(target, 
+        { params: 
+          { access_token: rootState.auth.user.token } 
+        }).then(result => {
+          commit('SET_ITEMS', {item: stateName, data: result.data.data});
+        }).catch(error => {
+          throw new Error(`API ${error}`);
+        });
+    });
   },
+  // async loadState({ commit, rootState }, payload) {
+  //   const target = 'items/' + payload;
+  //   await axios.get(target, 
+  //     { params: 
+  //       { access_token: rootState.auth.user.token } 
+  //     }).then(result => {
+  //       commit('SET_ITEMS', {item: payload, data: result.data.data});
+  //     }).catch(error => {
+  //       throw new Error(`API ${error}`);
+  //     });
+  // },
   async addState ({ commit, rootState }, payload) {
     let mutation = '';
     const target = 'items/' + payload.name;

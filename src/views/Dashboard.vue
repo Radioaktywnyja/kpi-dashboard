@@ -48,10 +48,7 @@ export default {
     return { title: this.$t("home") };
   },
   created() {
-    this.$store.dispatch('kpiData/loadState', 'teams');
-    this.$store.dispatch('kpiData/loadState', 'owners');
-    this.$store.dispatch('kpiData/loadState', 'kpis');
-    this.$store.dispatch('kpiData/loadState', 'values');
+    this.$store.dispatch('kpiData/initState');
   },
 }
 </script>
