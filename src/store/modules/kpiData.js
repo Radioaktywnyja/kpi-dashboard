@@ -33,92 +33,29 @@ export const getters = {
 
 // mutations
 export const mutations = {
-  SET_TEAMS (state, data) {
-    state.teams = data
-  },
-  SET_OWNERS (state, data) {
-    state.owners = data
-  },
-  SET_KPIS (state, data) {
-    state.kpis = data
-  },
-  SET_VALUES (state, data) {
-    state.values = data
+  SET_ITEMS (state, {item, data}) {
+    state[item] = data
   },
   SET_LOADING (state) {
     state.loading = !state.loading
   },
-  ADD_TEAMS (state, data) {
-    state.teams.push(data)
+  ADD_ITEMS (state, {item, data}) {
+    state[item].push(data)
   },
-  ADD_OWNERS (state, data) {
-    state.owners.push(data)
+  ADD_MULTIPLE_ITEMS (state, {item, data}) {
+    state[item].push(...data)
   },
-  ADD_KPIS (state, data) {
-    state.kpis.push(data)
-  },
-  ADD_VALUES (state, data) {
-    state.values.push(data)
-  },
-  ADD_MULTIPLE_TEAMS (state, data) {
-    state.teams.push(...data)
-  },
-  ADD_MULTIPLE_OWNERS (state, data) {
-    state.owners.push(...data)
-  },
-  ADD_MULTIPLE_KPIS (state, data) {
-    state.kpis.push(...data)
-  },
-  ADD_MULTIPLE_VALUES (state, data) {
-    state.values.push(...data)
-  },
-  UPDATE_TEAMS (state, data) {
-    state.teams = state.teams.map(item => {
-      if (item.id === data.id) {
-        return Object.assign({}, item, data)
+  UPDATE_ITEMS (state, {item, data}) {
+    state[item] = state[item].map(obj => {
+      if (obj.id === data.id) {
+        return Object.assign({}, obj, data)
       }
-      return item
+      return obj
     })
   },
-  UPDATE_OWNERS (state, data) {
-    state.owners = state.owners.map(item => {
-      if (item.id === data.id) {
-        return Object.assign({}, item, data)
-      }
-      return item
-    })
-  },
-  UPDATE_KPIS (state, data) {
-    state.kpis = state.kpis.map(item => {
-      if (item.id === data.id) {
-        return Object.assign({}, item, data)
-      }
-      return item
-    })
-  },
-  UPDATE_VALUES (state, data) {
-    state.values = state.values.map(item => {
-      if (item.id === data.id) {
-        return Object.assign({}, item, data)
-      }
-      return item
-    })
-  },
-  DELETE_TEAMS (state, data) {
-    let index = state.teams.findIndex(item => item.id == data)
-    state.teams.splice(index, 1)
-  },
-  DELETE_OWNERS (state, data) {
-    let index = state.owners.findIndex(item => item.id == data)
-    state.owners.splice(index, 1)
-  },
-  DELETE_KPIS (state, data) {
-    let index = state.kpis.findIndex(item => item.id == data)
-    state.kpis.splice(index, 1)
-  },
-  DELETE_VALUES (state, data) {
-    let index = state.values.findIndex(item => item.id == data)
-    state.values.splice(index, 1)
+  DELETE_ITEMS (state, {item, data}) {
+    let index = state[item].findIndex(obj => obj.id == data)
+    state[item].splice(index, 1)
   },
 }
 
@@ -126,12 +63,11 @@ export const mutations = {
 export const actions = {
   async loadState({ commit, rootState }, payload) {
     const target = 'items/' + payload;
-    const mutation = 'SET_' + payload.toUpperCase();
     await axios.get(target, 
       { params: 
         { access_token: rootState.auth.user.token } 
       }).then(result => {
-        commit(mutation, result.data.data);
+        commit('SET_ITEMS', {item: payload, data: result.data.data});
       }).catch(error => {
         throw new Error(`API ${error}`);
       });
@@ -146,17 +82,16 @@ export const actions = {
     await axios.post(target, payload.data, { headers })
       .then(result => {
         if (Array.isArray(result.data.data)) {
-          mutation = 'ADD_MULTIPLE_' + payload.name.toUpperCase();
+          mutation = 'ADD_MULTIPLE_ITEMS';
         } else {
-          mutation = 'ADD_' + payload.name.toUpperCase();
+          mutation = 'ADD_ITEMS';
         }
-        commit(mutation, result.data.data);
+        commit(mutation, {item: payload.name, data: result.data.data});
       }).catch(error => {
         throw new Error(`API ${error}`);
       });
   },
   async updateState ({ commit, rootState }, payload) {
-    let mutation = 'UPDATE_' + payload.name.toUpperCase();
     const target = 'items/' + payload.name + '/' + payload.data.id;
     const headers = {
       'Content-Type': 'application/json',
@@ -164,13 +99,12 @@ export const actions = {
     }
     await axios.patch(target, payload.data, { headers })
       .then(result => {
-        commit(mutation, result.data.data);
+        commit('UPDATE_ITEMS', {item: payload.name, data: result.data.data});
       }).catch(error => {
         throw new Error(`API ${error}`);
       });
   },
   async removeState ({ commit, rootState }, payload) {
-    const mutation = 'DELETE_' + payload.name.toUpperCase();
     const target = 'items/' + payload.name + '/' + payload.id;
     const headers = {
       'Content-Type': 'application/json',
@@ -178,7 +112,7 @@ export const actions = {
     }
     await axios.delete(target, { headers: headers })
       .then(() => {
-        commit(mutation, payload.id);
+        commit('DELETE_ITEMS', {item: payload.name, data: payload.id});
       }).catch(error => {
         throw new Error(`API ${error}`);
       });

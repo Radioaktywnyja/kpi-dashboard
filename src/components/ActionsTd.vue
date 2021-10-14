@@ -35,7 +35,7 @@ export default {
           this.$store.dispatch('kpiData/removeState', {name: this.type, id: this.item.id})
         }
       },
-      emitEdit(event) {
+      emitEdit() {
         this.$emit('editItem', this.item.id)
       }
     }
