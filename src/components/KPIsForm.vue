@@ -85,16 +85,15 @@ export default {
     },
     computed: {
       ...mapGetters({
+        getItemById: 'kpiData/getItemById',
         getKpiByTeam: 'kpiData/getKpiByTeam',
-        getOwnerById: 'kpiData/getOwnerById',
-        getKpiById: 'kpiData/getKpiById'
       }),
       ...mapState({owners: state => state.kpiData.owners}),
       kpis() {
         let that = this
         return this.getKpiByTeam(this.team_id).map(function(kpi) {
-          if (that.getOwnerById(kpi.owner)) {
-            kpi.ownerName = that.getOwnerById(kpi.owner).name
+          if (that.getItemById({name: 'owners', id: kpi.owner})) {
+            kpi.ownerName = that.getItemById({name: 'owners', id: kpi.owner}).name
           }
           return kpi
         })
@@ -125,15 +124,15 @@ export default {
       },
       storeKpi() {
         if (this.isEdit) {
-          this.$store.dispatch('kpiData/updateState', this.storePayload)
+          this.$store.dispatch('kpiData/updateApiState', this.storePayload)
         } else {
-          this.$store.dispatch('kpiData/addState', this.storePayload)
+          this.$store.dispatch('kpiData/addApiState', this.storePayload)
         }
         this.reset()
       },
       editItem(id) {
         this.isEdit = true
-        let targetKpi = this.getKpiById(id)
+        let targetKpi = this.getItemById({name: 'kpis', id: id})
         this.storeFormData = {
           name: targetKpi.name,
           frequency: targetKpi.frequency,

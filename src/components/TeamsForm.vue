@@ -50,16 +50,21 @@ export default {
           { key: 'actions', label: '' }
         ],
         storeFormData: {
-          name: ""
+          name: "",
+          section_id: null
         },
         isEdit: false
       }
     },
     computed: {
-      ...mapState({teams: state => state.kpiData.teams}),
+      ...mapState({activeSectionId: state => state.kpiData.activeSectionId}),
       ...mapGetters({
-        getTeamById: 'kpiData/getTeamById'
+        getItemById: 'kpiData/getItemById',
+        getTeamBySection: 'kpiData/getTeamBySection',
       }),
+      teams() {
+        return this.getTeamBySection(this.activeSectionId)
+      },
       storePayload() {
         return { name: 'teams', data: this.storeFormData }
       }
@@ -68,25 +73,30 @@ export default {
       reset() {
         this.isEdit = false
         this.storeFormData = {
-          name: ""
+          name: "",
+          section_id: this.activeSectionId,
         }
       },
       storeTeam() {
         if (this.isEdit) {
-          this.$store.dispatch('kpiData/updateState', this.storePayload)
+          this.$store.dispatch('kpiData/updateApiState', this.storePayload)
         } else {
-          this.$store.dispatch('kpiData/addState', this.storePayload)
+          this.$store.dispatch('kpiData/addApiState', this.storePayload)
         }
         this.reset()
       },
       editItem(id) {
         this.isEdit = true
-        let targetTeam = this.getTeamById(id)
+        let targetTeam = this.getItemById({name: 'teams', id: id})
         this.storeFormData = {
           name: targetTeam.name,
+          section_id: this.activeSectionId,
           id: targetTeam.id
         }
       }
+    },
+    mounted() {
+      this.storeFormData.section_id = this.activeSectionId
     }
 }
 </script>

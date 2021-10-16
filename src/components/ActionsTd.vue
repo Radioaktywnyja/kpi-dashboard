@@ -32,7 +32,7 @@ export default {
     methods: {
       removeItem(status, evt, accept) {
         if (accept) {
-          this.$store.dispatch('kpiData/removeState', {name: this.type, id: this.item.id})
+          this.$store.dispatch('kpiData/removeApiState', {name: this.type, id: this.item.id})
         }
       },
       emitEdit() {

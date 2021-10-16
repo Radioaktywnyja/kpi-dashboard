@@ -73,12 +73,11 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getKpiById: 'kpiData/getKpiById',
+      getItemById: 'kpiData/getItemById',
       getValuesByKpi: 'kpiData/getValuesByKpi',
-      getValueById: 'kpiData/getValueById'
     }),
     kpiData() {
-      return this.getKpiById(this.kpi_id);
+      return this.getItemById({name: 'kpis', id: this.kpi_id});
     },
     kpiValues() {
       return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date > a.date ? 1 : -1);
@@ -133,12 +132,12 @@ export default {
     },
     storeValues() {
       if (this.isEdit) {
-        this.$store.dispatch('kpiData/updateState', this.storePayload)
+        this.$store.dispatch('kpiData/updateApiState', this.storePayload)
           .then(() => {
             this.reset()
           });
       } else {
-        this.$store.dispatch('kpiData/addState', this.storePayload)
+        this.$store.dispatch('kpiData/addApiState', this.storePayload)
           .then(() => {
             this.reset()
           });
@@ -146,7 +145,7 @@ export default {
     },
     editItem(id) {
       this.isEdit = true
-      let targetValue = this.getValueById(id)
+      let targetValue = this.getItemById({name: 'values', id: id})
       this.storeFormData = [
         {
           date: targetValue.date,

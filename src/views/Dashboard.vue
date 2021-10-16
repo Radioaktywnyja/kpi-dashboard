@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CTabs>
+    <CTabs :key="activeTabKey">
       <CTab v-for="team in teams" :key="team.id" :title="team.name">
         <CCard v-for="kpi in kpis(team.id)" :key="kpi.id" class="mt-4">
           <CCardBody>
@@ -13,34 +13,45 @@
             <KpiChart :kpi_id="kpi.id" />
           </CCardBody>
         </CCard>
+        <NoItemsCard v-if="kpis(team.id).length == 0" text="No KPI's assigned" />
       </CTab>
     </CTabs>
+    <NoItemsCard v-if="teams.length == 0" text="No Teams assigned" />
   </div>
 </template>
 
 <script>
 import KpiChart from './charts/KpiChart'
+import NoItemsCard from '../components/NoItemsCard'
 import { mapGetters, mapState } from 'vuex'
 
 export default {
   name: 'Dashboard',
   components: {
-    KpiChart
+    KpiChart,
+    NoItemsCard
   },
   computed: {
-    ...mapState({teams: state => state.kpiData.teams}),
+    ...mapState({
+      activeSectionId: state => state.kpiData.activeSectionId,
+      activeTabKey: state => state.kpiData.activeTabKey,
+    }),
     ...mapGetters({
+      getItemById: 'kpiData/getItemById',
       getKpiByTeam: 'kpiData/getKpiByTeam',
-      getOwnerById: 'kpiData/getOwnerById'
-    })
+      getTeamBySection: 'kpiData/getTeamBySection',
+    }),
+    teams() {
+      return this.getTeamBySection(this.activeSectionId)
+    },
   },
   methods: {
     kpis(id) {
       return this.getKpiByTeam(id)
     },
     getOwner(id) {
-      if (this.getOwnerById(id)) {
-        return this.getOwnerById(id).name
+      if (this.getItemById({name: 'owners', id: id})) {
+        return this.getItemById({name: 'owners', id: id}).name
       }
     }
   },
@@ -48,7 +59,10 @@ export default {
     return { title: this.$t("home") };
   },
   created() {
-    this.$store.dispatch('kpiData/initState');
+    if (!this.activeSectionId) {
+      this.$store.dispatch('kpiData/initState');
+    }
+    this.$store.dispatch('kpiData/updateSimpleState', { name: 'activeTabKey', data: this.activeTabKey+1 })
   },
 }
 </script>

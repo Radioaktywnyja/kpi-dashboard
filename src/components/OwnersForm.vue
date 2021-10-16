@@ -58,7 +58,7 @@ export default {
     computed: {
       ...mapState({owners: state => state.kpiData.owners}),
       ...mapGetters({
-        getOwnerById: 'kpiData/getOwnerById'
+        getItemById: 'kpiData/getItemById',
       }),
       storePayload() {
         return { name: 'owners', data: this.storeFormData }
@@ -73,15 +73,15 @@ export default {
       },
       storeOwner() {
          if (this.isEdit) {
-          this.$store.dispatch('kpiData/updateState', this.storePayload)
+          this.$store.dispatch('kpiData/updateApiState', this.storePayload)
         } else {
-          this.$store.dispatch('kpiData/addState', this.storePayload)
+          this.$store.dispatch('kpiData/addApiState', this.storePayload)
         }
         this.reset()
       },
       editItem(id) {
         this.isEdit = true
-        let targetOwner = this.getOwnerById(id)
+        let targetOwner = this.getItemById({name: 'owners', id: id})
         this.storeFormData = {
           name: targetOwner.name,
           id: targetOwner.id

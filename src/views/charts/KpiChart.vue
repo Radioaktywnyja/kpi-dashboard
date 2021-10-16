@@ -35,11 +35,11 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getKpiById: 'kpiData/getKpiById',
+      getItemById: 'kpiData/getItemById',
       getValuesByKpi: 'kpiData/getValuesByKpi'
     }),
     kpiData() {
-      return this.getKpiById(this.kpi_id);
+      return this.getItemById({name: 'kpis', id: this.kpi_id});
     },
     kpiValues() {
       return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1);
