@@ -54,15 +54,6 @@ export default {
         return this.getItemById({name: 'owners', id: id}).name
       }
     }
-  },
-  metaInfo() {
-    return { title: this.$t("home") };
-  },
-  created() {
-    if (!this.activeSectionId) {
-      this.$store.dispatch('kpiData/initState');
-    }
-    this.$store.dispatch('kpiData/updateSimpleState', { name: 'activeTabKey', data: this.activeTabKey+1 })
-  },
+  }
 }
 </script>

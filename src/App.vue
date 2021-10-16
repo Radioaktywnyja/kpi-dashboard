@@ -4,7 +4,12 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  created() {
+    if (!this.activeSectionId) {
+      this.$store.dispatch('kpiData/initState');
+    }
+  },
 }
 </script>
 
