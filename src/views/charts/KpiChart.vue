@@ -36,13 +36,53 @@ export default {
   computed: {
     ...mapGetters({
       getItemById: 'kpiData/getItemById',
-      getValuesByKpi: 'kpiData/getValuesByKpi'
+      getValuesByKpi: 'kpiData/getValuesByKpi',
+      getValuesByMultipleKpis: 'kpiData/getValuesByMultipleKpis',
     }),
     kpiData() {
       return this.getItemById({name: 'kpis', id: this.kpi_id});
     },
     kpiValues() {
-      return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1);
+      if (!this.kpiData.is_computed) {
+        return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1)
+      } else {
+        let that = this
+        let kpiIds = that.kpiData.computed_kpis.map(item => item.kpi_id)
+        let rawValues = that.getValuesByMultipleKpis(kpiIds).sort((a, b) => b.date < a.date ? 1 : -1)
+        let lastDate = ''
+        let nextDate = ''
+        let computedValues = rawValues.reduce(function (acc, obj) {
+          if (acc.length == 0 ) {
+            acc.push(obj)
+            acc[0].total = 1
+            acc[0].sum = obj.value
+            lastDate = obj.date
+            nextDate = that.setNextDate(lastDate)
+          } else if (obj.date <= lastDate) {
+            acc[acc.length - 1].total += 1
+            acc[acc.length - 1].sum += obj.value
+            acc[acc.length - 1].date = obj.date
+            acc[acc.length - 1].value = Math.round((acc[acc.length - 1].sum / acc[acc.length - 1].total) * 100) / 100
+          } else {
+            if (obj.date > nextDate) {
+              while (obj.date > nextDate) {
+                lastDate = nextDate
+                nextDate = that.setNextDate(lastDate)
+              }
+            }
+            acc.push(obj)
+            acc[acc.length - 1].total = 1
+            acc[acc.length - 1].sum = obj.value
+            acc[acc.length - 1].date = nextDate
+            lastDate = nextDate
+            if (obj.date == nextDate) {
+              nextDate = that.setNextDate(lastDate)
+            }
+          }
+          return acc
+        }, [])
+        return computedValues
+      }
     },
     startDate: {
       get(){
@@ -197,7 +237,20 @@ export default {
   methods: {
     toggleChartType() {
       this.chartType = this.chartType == 'CChartBar' ? 'CChartLine' : 'CChartBar'
-    }
+    },
+    setNextDate(date, counter = 1) {
+      let lastDate = new Date(date)
+      switch (this.kpiData.frequency) {
+        case 'monthly':  
+          lastDate.setMonth(lastDate.getMonth() + (1*counter))
+          break
+        case 'weekly': 
+          lastDate.setDate(lastDate.getDate() + (7*counter))
+          break
+        default: lastDate.setDate(lastDate.getDate() + (1*counter))
+      }
+      return lastDate.toISOString().split('T')[0]
+    },
   },
   mounted() {
     let today = new Date();

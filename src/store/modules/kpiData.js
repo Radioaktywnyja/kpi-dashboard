@@ -22,6 +22,9 @@ export const getters = {
   getValuesByKpi: (state) => (kpi_id) => {
     return state.values.filter(val => val.kpi_id == kpi_id)
   },
+  getValuesByMultipleKpis: (state) => (kpiIds) => {
+    return state.values.filter(val => kpiIds.includes(val.kpi_id))
+  },
   getKpiByTeam: (state) => (team_id) => {
     return state.kpis.filter(kpi => kpi.team_id == team_id)
   },
