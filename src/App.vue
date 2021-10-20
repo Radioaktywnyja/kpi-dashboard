@@ -18,6 +18,11 @@ export default {
       return this.isAuthenticated && !this.activeSectionId
     }
   },
+  created() {
+    if (this.shouldInit) {
+      this.$store.dispatch('kpiData/initState');
+    }
+  },
   watch: {
     shouldInit(newValue) {
       if (newValue) {
