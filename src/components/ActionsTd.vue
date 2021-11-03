@@ -1,7 +1,8 @@
 <template>
-    <td class="py-2 text-center actions-td">
+    <td class="py-2 text-center" :style="actionTdStyles">
         <CButton color="warning" class="mr-2" size="sm" @click="emitEdit" title="Edit"><CIcon name="cil-pencil"/></CButton>
         <CButton color="danger" size="sm" @click="deleteModal = true"  title="Delete"><CIcon name="cil-trash"/></CButton>
+        <CButton v-if="showDetailsButton" color="info" class="ml-2" size="sm" @click="emitToggleDetails" title="Details"><CIcon name="cil-plus"/></CButton>
         <CModal title="Delete item" color="danger" :show.sync="deleteModal" @update:show="removeItem">
           Are you sure you want to delete '{{identifier}}' from '{{type}}'
         </CModal>
@@ -10,8 +11,8 @@
 
 <script>
 export default {
-    name: 'ValuesForm',
-    props: ['type', 'item'],
+    name: 'ActionsTD',
+    props: ['type', 'item', 'itemIndex'],
     data() {
       return {
         deleteModal: false,
@@ -27,6 +28,14 @@ export default {
         } else {
           return null
         }
+      },
+      showDetailsButton() {
+        return this.type == 'kpis' ? true : false
+      },
+      actionTdStyles() {
+        return {
+          'min-width': this.showDetailsButton ? '145px' : '100px'
+        }
       }
     },
     methods: {
@@ -37,13 +46,10 @@ export default {
       },
       emitEdit() {
         this.$emit('editItem', this.item.id)
+      },
+      emitToggleDetails() {
+        this.$emit('toggleDetails', this.itemIndex)
       }
     }
 }
 </script>
-
-<style lang="scss" scoped>
-.actions-td {
-  min-width: 100px;
-}
-</style>
