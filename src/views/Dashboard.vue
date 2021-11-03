@@ -6,7 +6,10 @@
           <CCardBody>
             <CRow>
               <CCol>
-                <h4 class="card-title mb-1">{{ kpi.name }}</h4>
+                <h4 class="card-title mb-1">
+                  {{ kpi.name }}
+                  <CIcon class="ml-2 text-info cursor-pointer" v-if="kpi.definition" name="cil-magnifying-glass" v-c-tooltip="{content: kpi.definition, placement: 'bottom', boundaries: 'viewport' }" />
+                </h4>
                 <div class="small text-muted"><span class="text-nowrap mr-3"><span class="text-info">Owner: </span>{{ getOwner(kpi.owner) }}</span><span class="text-nowrap"><span class="text-info">Frequency: </span>{{ kpi.frequency }}</span></div>
               </CCol>
             </CRow>
@@ -57,3 +60,18 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+.card-title >>> .arrow:before {
+  border-bottom-color: #39f;
+  border-top-color: #39f;
+}
+.card-title >>> .tooltip-old-inner {
+  background-color: #fff;
+  color: inherit;
+  border: 1px solid #39f;
+}
+</style>
