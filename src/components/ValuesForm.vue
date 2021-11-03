@@ -24,8 +24,7 @@
         <span v-if="isEdit" class="font-weight-bold mb-2 d-block">Edit Value</span>
         <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in rowsCount" :key="n">
           <CCol sm="5" class="px-2">
-            <CInput v-if="index == 0" label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[0].date" class="m-0" />
-            <CInput v-else label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="m-0" />
+            <CInput label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="m-0" />
           </CCol>
           <CCol sm="5" class="px-2">
             <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="m-0" />
