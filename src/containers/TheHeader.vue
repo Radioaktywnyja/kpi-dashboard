@@ -1,48 +1,42 @@
 <template>
   <CHeader fixed with-subheader light>
-    <CHeaderBrand class="ml-4 mr-auto mr-lg-4" to="/">
-      <CIcon name="logo" height="48" alt="Logo"/>
+    <CHeaderBrand class="ml-4 mr-auto mr-xl-4 order-1" to="/">
+      <CIcon name="logo" height="40" alt="Logo"/>
     </CHeaderBrand>
-    <CHeaderNav class="d-md-down-none mr-auto">
-      <CHeaderNavItem class="px-3">
+    <CHeaderNav class="header-dropdowns mr-auto order-3 order-xl-2 flex-wrap">
+      <CHeaderNavItem class="header-moderator-nav d-flex pl-3 mr-3">
         <CHeaderNavLink to="/dashboard">
-          Dashboard
+          <CButton color="secondary" class="py-1 mt-2">Dashboard</CButton>
         </CHeaderNavLink>
-      </CHeaderNavItem>
-      <CHeaderNavItem class="px-3">
         <CHeaderNavLink to="/forms">
-          Forms
+          <CButton color="secondary" class="py-1 mt-2">Forms</CButton>
         </CHeaderNavLink>
       </CHeaderNavItem>
       <CHeaderNavItem class="pl-3">
-        <CDropdown color="primary" :toggler-text="activeDepartamentName" class="type-select m-2">
+        <CDropdown color="primary" :toggler-text="activeDepartamentName" class="type-select mt-2 mx-2">
           <CDropdownItem v-for="departament in departaments" :key="departament.id" @click="setDepartament(departament.id)">{{ departament.name }}</CDropdownItem>
         </CDropdown>
       </CHeaderNavItem>
-      <CHeaderNavItem v-if="sections.length > 0">
-        <CDropdown color="info" :toggler-text="activeSectionName" class="type-select m-2">
+      <CHeaderNavItem class="pl-3" v-if="sections.length > 0">
+        <CDropdown color="info" :toggler-text="activeSectionName" class="type-select mt-2 mx-2">
           <CDropdownItem v-for="section in sections" :key="section.id" @click="setSection(section.id)">{{ section.name }}</CDropdownItem>
         </CDropdown>
       </CHeaderNavItem>
     </CHeaderNav>
-    <CHeaderNav class="mr-4">
-      <TheHeaderDropdownAccnt/>
+    <CHeaderNav class="mr-4 order-2 order-xl-3">
+      <CButton color="secondary" class="py-1 mt-2" @click.prevent="logout">Logout <CIcon name="cil-x-circle" class="mb-1" /></CButton>
     </CHeaderNav>
-    <CSubheader class="px-3">
+    <CSubheader class="px-3 mt-2 order-4">
       <CBreadcrumbRouter class="border-0 mb-0"/>
     </CSubheader>
   </CHeader>
 </template>
 
 <script>
-import TheHeaderDropdownAccnt from './TheHeaderDropdownAccnt'
 import { mapGetters, mapState } from 'vuex'
 
 export default {
   name: 'TheHeader',
-  components: {
-    TheHeaderDropdownAccnt
-  },
   computed: {
     ...mapState({
       departaments: state => state.kpiData.departaments,
@@ -73,6 +67,11 @@ export default {
       this.$store.dispatch('kpiData/updateSimpleState', { name: 'activeSectionId', data: id })
       this.$store.dispatch('kpiData/updateSimpleState', { name: 'activeTabKey', data: this.activeTabKey+1 })
     },
+    async logout (){
+      await this.$store.dispatch('auth/LogOut').then(response => {
+        this.$router.push({name: 'Login'})
+      })
+    }
   }
 }
 </script>
@@ -83,5 +82,15 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+  @media (max-width: 750px) {
+    .header-moderator-nav {
+      width: 100%;
+    }
+  }
+  @media (max-width: 1199px) {
+    .header-dropdowns {
+      width: 100%;
+    }
   }
 </style>
