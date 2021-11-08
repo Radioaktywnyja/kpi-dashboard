@@ -4,7 +4,8 @@
       <CTab title="Values">
         <CTabs class="mt-4">
           <CTab v-for="team in teams" :key="team.id" :title="team.name">
-            <CRow class="mt-4">
+            <CRow class="mt-3">
+              <div class="d-flex align-items-center w-100 ml-3 mb-3">Hide computed KPIs: <CSwitch class="ml-2" color="primary" variant = '3d' :checked.sync="hideAutomatic" /></div>
               <CCol lg="6" v-for="kpi in kpis(team.id)" :key="kpi.id">
                 <ValuesForm :kpi_id="kpi.id" />
               </CCol>
@@ -49,6 +50,11 @@ export default {
     OwnersForm,
     NoItemsCard
   },
+  data() {
+    return {
+      hideAutomatic: true
+    }
+  },
   computed: {
     // ...mapState({kpis: state => state.kpiData.kpis}),
     ...mapState({
@@ -65,7 +71,13 @@ export default {
   },
   methods: {
     kpis(id) {
-      return this.getKpiByTeam(id)
+      let kpis = this.getKpiByTeam(id);
+      if (this.hideAutomatic) {
+        kpis = kpis.filter((item) => {
+          return item.is_computed == false
+        })
+      }
+      return kpis
     }
   },
 }
