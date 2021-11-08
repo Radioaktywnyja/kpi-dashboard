@@ -12,10 +12,6 @@ const Dashboard = () => import('@/views/Dashboard')
 const Login = () => import('@/views/pages/Login')
 const Forms = () => import('@/views/pages/Forms')
 
-// Users
-const Users = () => import('@/views/users/Users')
-const User = () => import('@/views/users/User')
-
 Vue.use(Router)
 
 const router = new Router({
@@ -38,33 +34,6 @@ function configRoutes () {
           name: 'Dashboard',
           meta: {requiresAuth: true},
           component: Dashboard
-        },
-        {
-          path: 'users',
-          meta: {
-            label: 'Users',
-            requiresAuth: true,
-          },
-          component: {
-            render(c) {
-              return c('router-view')
-            }
-          },
-          children: [
-            {
-              path: '',
-              name: 'Users',
-              component: Users
-            },
-            {
-              path: ':id',
-              meta: {
-                label: 'User Details'
-              },
-              name: 'User',
-              component: User
-            }
-          ]
         },
         {
           path: 'forms',
