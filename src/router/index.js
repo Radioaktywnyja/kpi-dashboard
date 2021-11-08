@@ -69,7 +69,7 @@ function configRoutes () {
         {
           path: 'forms',
           name: 'Forms',
-          meta: {requiresAuth: true},
+          meta: {requiresAdmin: true},
           component: Forms
         }
       ]
@@ -84,7 +84,13 @@ function configRoutes () {
 }
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAdmin)) {
+    if (store.state.auth.user.isAdmin) {
+      next();
+    } else {
+      next("/login");
+    }
+  } else if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (store.getters['auth/isAuthenticated']) {
       next();
     } else {

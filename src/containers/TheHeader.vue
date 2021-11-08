@@ -4,7 +4,7 @@
       <CIcon name="logo" height="40" alt="Logo"/>
     </CHeaderBrand>
     <CHeaderNav class="header-dropdowns mr-auto order-3 order-xl-2 flex-wrap">
-      <CHeaderNavItem class="header-moderator-nav d-flex pl-3 mr-3">
+      <CHeaderNavItem v-if="isAdmin" class="header-moderator-nav d-flex pl-3 mr-3">
         <CHeaderNavLink to="/dashboard">
           <CButton color="secondary" class="py-1 mt-2">Dashboard</CButton>
         </CHeaderNavLink>
@@ -43,10 +43,11 @@ export default {
       activeDepartamentId: state => state.kpiData.activeDepartamentId,
       activeSectionId: state => state.kpiData.activeSectionId,
       activeTabKey: state => state.kpiData.activeTabKey,
+      isAdmin: state => state.auth.user.isAdmin,
     }),
     ...mapGetters({
       getItemById: 'kpiData/getItemById',
-      getSectionByDepartament: 'kpiData/getSectionByDepartament'
+      getSectionByDepartament: 'kpiData/getSectionByDepartament',
     }),
     sections() {
       return this.getSectionByDepartament(this.activeDepartamentId);
