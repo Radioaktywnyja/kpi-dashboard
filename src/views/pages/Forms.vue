@@ -5,7 +5,10 @@
         <CTabs class="mt-4">
           <CTab v-for="team in teams" :key="team.id" :title="team.name">
             <CRow class="mt-3">
-              <div class="d-flex align-items-center w-100 ml-3 mb-3">Hide computed KPIs: <CSwitch class="ml-2" color="primary" variant = '3d' :checked.sync="hideAutomatic" /></div>
+              <CCol sm="12" class="d-flex">
+                <div class="d-flex align-items-center ml-3 mb-3">Hide computed KPIs: <CSwitch class="ml-2" color="primary" variant = '3d' :checked.sync="hideAutomatic" /></div>
+                <CInput label="Filter KPIs:" :horizontal="{ label: 'col-sm-4 px-0', input: 'col-sm-8 px-0'}" v-model="filterKpis" placeholder="Enter KPI name" class="mx-3 text-nowrap" />
+              </CCol>
               <CCol lg="6" v-for="kpi in kpis(team.id)" :key="kpi.id">
                 <ValuesForm :kpi_id="kpi.id" />
               </CCol>
@@ -52,7 +55,8 @@ export default {
   },
   data() {
     return {
-      hideAutomatic: true
+      hideAutomatic: true,
+      filterKpis: ''
     }
   },
   computed: {
@@ -75,6 +79,11 @@ export default {
       if (this.hideAutomatic) {
         kpis = kpis.filter((item) => {
           return item.is_computed == false
+        })
+      }
+      if (this.filterKpis) {
+        kpis = kpis.filter((item) => {
+          return item.name.toLowerCase().includes(this.filterKpis)
         })
       }
       return kpis
