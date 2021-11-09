@@ -11,6 +11,7 @@ const Dashboard = () => import('@/views/Dashboard')
 // Views - Pages
 const Login = () => import('@/views/pages/Login')
 const Forms = () => import('@/views/pages/Forms')
+const Page404 = () => import('@/views/pages/Page404')
 
 Vue.use(Router)
 
@@ -24,6 +25,12 @@ const router = new Router({
 function configRoutes () {
   return [
     {
+      path: '/login',
+      name: 'Login',
+      meta: { guest: true },
+      component: Login
+    },
+    {
       path: '/',
       redirect: '/dashboard',
       name: 'Home',
@@ -31,6 +38,7 @@ function configRoutes () {
       children: [
         {
           path: 'dashboard',
+          alias: '/',
           name: 'Dashboard',
           meta: {requiresAuth: true},
           component: Dashboard
@@ -40,15 +48,16 @@ function configRoutes () {
           name: 'Forms',
           meta: {requiresAdmin: true},
           component: Forms
+        },
+        {
+          path: '/404',
+          name: '404',
+          alias: '*',
+          meta: {requiresAuth: true},
+          component: Page404
         }
       ]
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      meta: { guest: true },
-      component: Login
-    },
+    }
   ]
 }
 
