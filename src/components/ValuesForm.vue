@@ -2,7 +2,7 @@
   <div>
     <CCard>
       <CCardHeader class="font-weight-bold">
-        {{kpiData.name}} ({{kpiData.unit}})
+        {{kpiData.name}} ({{kpiData.unit}}) - {{kpiData.frequency}}
       </CCardHeader>
 
       <CCardBody>
