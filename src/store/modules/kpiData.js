@@ -142,7 +142,7 @@ export const actions = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + rootState.auth.user.token 
     }
-    await axios.delete(target, { headers: headers })
+    await axios.patch(target, {status: 'Archived'}, { headers })
       .then(() => {
         commit('DELETE_ITEMS', {item: payload.name, data: payload.id});
       }).catch(error => {
