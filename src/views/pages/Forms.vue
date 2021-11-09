@@ -8,7 +8,7 @@
               <CCol sm="12" class="d-flex flex-wrap">
                 <div class="d-flex align-items-center ml-3 mb-3">Hide computed KPIs: <CSwitch class="ml-2" color="primary" variant = '3d' :checked.sync="hideAutomatic" /></div>
                 <CInput label="Filter KPIs:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model="filterKpis" placeholder="Enter KPI name" class="ml-3 text-nowrap" />
-                <CInput type="number" label="Items per page:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model="itemsPerPage" class="ml-3 text-nowrap" />
+                <CInput type="number" label="Items per page:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model.number="itemsPerPage" class="ml-3 text-nowrap" />
               </CCol>
               <CCol lg="6" v-for="kpi in kpis(team.id)" :key="kpi.id">
                 <ValuesForm :kpi_id="kpi.id" :items_per_page="itemsPerPage" />
