@@ -5,12 +5,13 @@
         <CTabs class="mt-4">
           <CTab v-for="team in teams" :key="team.id" :title="team.name">
             <CRow class="mt-3">
-              <CCol sm="12" class="d-flex">
+              <CCol sm="12" class="d-flex flex-wrap">
                 <div class="d-flex align-items-center ml-3 mb-3">Hide computed KPIs: <CSwitch class="ml-2" color="primary" variant = '3d' :checked.sync="hideAutomatic" /></div>
-                <CInput label="Filter KPIs:" :horizontal="{ label: 'col-sm-4 px-0', input: 'col-sm-8 px-0'}" v-model="filterKpis" placeholder="Enter KPI name" class="mx-3 text-nowrap" />
+                <CInput label="Filter KPIs:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model="filterKpis" placeholder="Enter KPI name" class="ml-3 text-nowrap" />
+                <CInput type="number" label="Items per page:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model="itemsPerPage" class="ml-3 text-nowrap" />
               </CCol>
               <CCol lg="6" v-for="kpi in kpis(team.id)" :key="kpi.id">
-                <ValuesForm :kpi_id="kpi.id" />
+                <ValuesForm :kpi_id="kpi.id" :items_per_page="itemsPerPage" />
               </CCol>
             </CRow>
             <NoItemsCard v-if="kpis(team.id).length == 0" text="No KPI's assigned" />
@@ -56,7 +57,8 @@ export default {
   data() {
     return {
       hideAutomatic: true,
-      filterKpis: ''
+      filterKpis: '',
+      itemsPerPage: 5,
     }
   },
   computed: {
