@@ -8,6 +8,8 @@
       <CCardBody>
         <CDataTable
           striped
+          columnFilter
+          sorter
           :items="teams"
           :fields="fields"
           :noItemsView="{ noResults: 'No filtering results available', noItems: 'There are no teams' }"
@@ -47,7 +49,7 @@ export default {
       return {
         fields: [
           { key: 'name' },
-          { key: 'actions', label: '' }
+          { key: 'actions', label: '', filter: false, sorter: false }
         ],
         storeFormData: {
           name: "",

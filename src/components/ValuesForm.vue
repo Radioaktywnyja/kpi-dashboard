@@ -8,6 +8,8 @@
       <CCardBody>
         <CDataTable
           striped
+          columnFilter
+          sorter
           :items="kpiValues"
           :fields="fields"
           :items-per-page="5"
@@ -56,7 +58,7 @@ export default {
       fields: [
         { key: 'date' },
         { key: 'value' },
-        { key: 'actions', label: '' }
+        { key: 'actions', label: '', filter: false, sorter: false }
       ],
       rowsCount: 1,
       horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},

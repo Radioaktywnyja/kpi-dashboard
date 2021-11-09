@@ -8,15 +8,14 @@
       <CCardBody>
         <CDataTable
           striped
+          columnFilter
+          sorter
           :items="kpis"
           :fields="fields"
           :noItemsView="{ noResults: 'No filtering results available', noItems: 'No kpis for this team' }"
         >
         <template #actions="{item, index}">
           <ActionsTd type="kpis" :item="item" :itemIndex="index" @editItem="editItem" @toggleDetails="toggleDetails" />
-        </template>
-        <template #is_computed="{item}">
-          <td>{{ item.is_computed ? 'auto' : 'manual' }}</td>
         </template>
         <template #details="{item, index}">
           <CCollapse :show="openedDetails == index" :duration="300">
@@ -99,12 +98,12 @@ export default {
       return {
         fields: [
           { key: 'name' },
-          { key: 'ownerName', label: 'owner' },
+          { key: 'ownerName', label: 'Owner' },
           { key: 'frequency' },
           { key: 'unit' },
           { key: 'target' },
-          { key: 'is_computed', label: 'type' },
-          { key: 'actions', label: '' },
+          { key: 'is_computed', label: 'Is computed' },
+          { key: 'actions', label: '', filter: false, sorter: false },
         ],
         horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
         frequencyOptions: ['daily', 'weekly', 'monthly'],
