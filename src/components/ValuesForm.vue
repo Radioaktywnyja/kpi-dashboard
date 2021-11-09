@@ -12,7 +12,7 @@
           sorter
           :items="kpiValues"
           :fields="fields"
-          :items-per-page="items_per_page ? items_per_page : 5"
+          :items-per-page="items_per_page > 0 ? items_per_page : 5"
           :active-page="1"
           :pagination="{ doubleArrows: false, align: 'center'}"
           :noItemsView="{ noResults: 'No filtering results available', noItems: 'No values for this KPI' }"
