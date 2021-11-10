@@ -68,13 +68,25 @@
             <CInput v-model="storeFormData.target" label="Target" class="m-0" />
           </CCol>
           <CCol sm="6" md="4" xl="2" class="px-2 mb-2">
-            <CSelect :value.sync="storeFormData.is_computed" label="Type" :options="typeOptions" class="m-0" />
+            <CSelect :value.sync="storeFormData.is_computed" label="Is computed" :options="[false, true]" class="m-0" />
           </CCol>
           <CCol v-if="storeFormData.is_computed" sm="12" xl="4" class="px-2 mb-2">
             <KPISelect :computed_kpis="storeFormData.computed_kpis" @syncSelectedKpi="syncSelectedKpi" />
           </CCol>
           <CCol sm="12" md="6" class="px-2 mb-2">
             <CTextarea v-model="storeFormData.definition" label="Definition" class="m-0" />
+          </CCol>
+          <CCol>
+            <label>Editors Emails</label>
+            <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in storeFormData.editors_emails.length" :key="n">
+              <CCol col="8" sm="9" class="p-0">
+                <CInput type="email" v-model="storeFormData.editors_emails[index].editors_email" placeholder="Enter email" class="m-0" />
+              </CCol>
+              <CCol col="3" sm="2" class="px-2 d-flex">
+                <CButton color="secondary" size="sm" class="ml-2 mr-2" @click.prevent="addEditor">+</CButton>
+                <CButton v-if="index != 0" color="secondary" size="sm" class="ml-1" @click.prevent="reduceEditor(index)"><CIcon name="cil-trash" size="sm"/></CButton>
+              </CCol>
+            </CRow>
           </CCol>
         </CRow>
       </CCardBody>
@@ -107,20 +119,17 @@ export default {
         ],
         horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
         frequencyOptions: ['daily', 'weekly', 'monthly'],
-        typeOptions: [
-          {value: false, label: 'manual'},
-          {value: true, label: 'auto'}
-        ],
         storeFormData: {
           name: "",
-          frequency: "",
+          frequency: "daily",
           owner: 1,
           team_id: this.team_id,
           target: "",
           unit: "",
           definition: "",
           is_computed: false,
-          computed_kpis: []
+          computed_kpis: [],
+          editors_emails: [{editors_email: this.$store.state.auth.user.email}]
         },
         isEdit: false,
         openedDetails: null
@@ -131,7 +140,10 @@ export default {
         getItemById: 'kpiData/getItemById',
         getKpiByTeam: 'kpiData/getKpiByTeam',
       }),
-      ...mapState({owners: state => state.kpiData.owners}),
+      ...mapState({
+        owners: state => state.kpiData.owners,
+        userEmail: state => state.auth.user.email,
+      }),
       kpis() {
         let that = this
         return this.getKpiByTeam(this.team_id).map(function(kpi) {
@@ -158,17 +170,19 @@ export default {
         this.isEdit = false
         this.storeFormData = {
           name: "",
-          frequency: "",
+          frequency: "daily",
           owner: 1,
           team_id: this.team_id,
           target: "",
           unit: "",
           definition: "",
           is_computed: false,
-          computed_kpis: []
+          computed_kpis: [],
+          editors_emails: [{editors_email: this.userEmail}]
         }
       },
       storeKpi() {
+        this.validateEmails()
         if (this.isEdit) {
           this.$store.dispatch('kpiData/updateApiState', this.storePayload)
         } else {
@@ -179,6 +193,7 @@ export default {
       editItem(id) {
         this.isEdit = true
         let targetKpi = this.getItemById({name: 'kpis', id: id})
+        console.log(targetKpi.editors_emails)
         this.storeFormData = {
           name: targetKpi.name,
           frequency: targetKpi.frequency,
@@ -189,6 +204,7 @@ export default {
           definition: targetKpi.definition,
           is_computed: targetKpi.is_computed,
           computed_kpis: targetKpi.computed_kpis,
+          editors_emails: JSON.parse(JSON.stringify(targetKpi.editors_emails)),
           id: targetKpi.id
         }
       },
@@ -206,6 +222,18 @@ export default {
       },
       syncSelectedKpi(selectedKPIs) {
         this.storeFormData.computed_kpis = selectedKPIs
+      },
+      addEditor() {
+        this.storeFormData.editors_emails.push({editors_email: ''})
+      },
+      reduceEditor(index) {
+        this.storeFormData.editors_emails.splice(index, 1)
+      },
+      validateEmails() {
+        const emailRegex = /\S+@\S+\.\S+/
+        this.storeFormData.editors_emails = this.storeFormData.editors_emails.filter((item) => {
+          return emailRegex.test(item.editors_email)
+        })
       }
     }
 }

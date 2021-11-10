@@ -22,22 +22,24 @@
         </template>
         </CDataTable>
 
-        <span v-if="!isEdit" class="font-weight-bold mb-2 d-block">Add new Values</span>
-        <span v-if="isEdit" class="font-weight-bold mb-2 d-block">Edit Value</span>
-        <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in rowsCount" :key="n">
-          <CCol sm="5" class="px-2">
-            <CInput label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="m-0" />
-          </CCol>
-          <CCol sm="5" class="px-2">
-            <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="m-0" />
-          </CCol>
-          <CCol v-if="!isEdit" sm="1" class="p-2 d-flex">
-            <CButton color="secondary" size="sm" class="mr-2" @click.prevent="addValue">+</CButton>
-            <CButton v-if="index != 0" color="secondary" size="sm" @click.prevent="reduceValue">-</CButton>
-          </CCol>
-        </CRow>
+        <div v-if="showActions">
+          <span v-if="!isEdit" class="font-weight-bold mb-2 d-block">Add new Values</span>
+          <span v-if="isEdit" class="font-weight-bold mb-2 d-block">Edit Value</span>
+          <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in rowsCount" :key="n">
+            <CCol sm="5" class="px-2">
+              <CInput label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="m-0" />
+            </CCol>
+            <CCol sm="5" class="px-2">
+              <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="m-0" />
+            </CCol>
+            <CCol v-if="!isEdit" sm="1" class="p-2 d-flex">
+              <CButton color="secondary" size="sm" class="mr-2" @click.prevent="addValue">+</CButton>
+              <CButton v-if="index != 0" color="secondary" size="sm" @click.prevent="reduceValue">-</CButton>
+            </CCol>
+          </CRow>
+        </div>
       </CCardBody>
-      <CCardFooter>
+      <CCardFooter v-if="showActions">
         <CButton type="submit" size="sm" color="primary" class="mr-2" @click.prevent="storeValues"><CIcon name="cil-check-circle"/> Submit</CButton>
         <CButton type="reset" size="sm" color="danger" @click.prevent="reset"><CIcon name="cil-ban"/> Reset</CButton>
       </CCardFooter>
@@ -46,7 +48,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import ActionsTd from './ActionsTd.vue'
 
 export default {
@@ -58,11 +60,6 @@ export default {
   },
   data () {
     return {
-      fields: [
-        { key: 'date' },
-        { key: 'value' },
-        { key: 'actions', label: '', filter: false, sorter: false }
-      ],
       rowsCount: 1,
       horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
       storeFormData: [
@@ -80,6 +77,9 @@ export default {
       getItemById: 'kpiData/getItemById',
       getValuesByKpi: 'kpiData/getValuesByKpi',
     }),
+    ...mapState({
+      userEmail: state => state.auth.user.email,
+    }),
     kpiData() {
       return this.getItemById({name: 'kpis', id: this.kpi_id});
     },
@@ -96,6 +96,23 @@ export default {
     lastDate() {
       return this.storeFormData[0].date;
     },
+    showActions() {
+      let showActions = false
+      if (this.kpiData.editors_emails && this.kpiData.editors_emails.some(item => item.editors_email == this.userEmail )) {
+        showActions = true
+      }
+      return showActions
+    },
+    fields() {
+      let fields = [
+        { key: 'date' },
+        { key: 'value' },
+      ]
+      if (this.showActions) {
+        fields.push({ key: 'actions', label: '', filter: false, sorter: false })
+      }
+      return fields
+    }
   },
   methods: {
     addValue() {
