@@ -1,7 +1,7 @@
 <template>
   <div>
     <CCard>
-      <CCardHeader class="font-weight-bold">
+      <CCardHeader class="font-weight-bold h5">
         {{kpiData.name}} ({{kpiData.unit}}) - {{kpiData.frequency}}
       </CCardHeader>
 
@@ -20,19 +20,24 @@
         <template #actions="{item}">
           <ActionsTd type="values" :item="item" @editItem="editItem" />
         </template>
+        <template #comment="{item}">
+          <td>
+            <span v-if="item.comment">{{ item.comment }}</span>
+            <i v-else>empty</i>
+          </td>
+        </template>
         </CDataTable>
 
         <div v-if="showActions">
           <span v-if="!isEdit" class="font-weight-bold mb-2 d-block">Add new Values</span>
           <span v-if="isEdit" class="font-weight-bold mb-2 d-block">Edit Value</span>
           <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in rowsCount" :key="n">
-            <CCol sm="5" class="px-2">
-              <CInput label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="m-0" />
+            <CCol sm="10" md="11" class="px-2 py-2 mb-2 d-flex flex-wrap justify-content-between bg-light rounded">
+              <CInput label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
+              <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
+              <CTextarea label="Comment" :horizontal="horizontalInput" v-model="storeFormData[index].comment" class="my-1 mx-0 pr-3 flex-grow-1" />
             </CCol>
-            <CCol sm="5" class="px-2">
-              <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="m-0" />
-            </CCol>
-            <CCol v-if="!isEdit" sm="1" class="p-2 d-flex">
+            <CCol v-if="!isEdit" sm="2" md="1" class="p-2 d-flex">
               <CButton color="secondary" size="sm" class="mr-2" @click.prevent="addValue">+</CButton>
               <CButton v-if="index != 0" color="secondary" size="sm" @click.prevent="reduceValue">-</CButton>
             </CCol>
@@ -61,11 +66,12 @@ export default {
   data () {
     return {
       rowsCount: 1,
-      horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
+      horizontalInput: { label: 'pl-0', input: 'pr-0 flex-grow-1'},
       storeFormData: [
         {
           date: new Date().toISOString().split('T')[0],
           value: 0,
+          comment: '',
           kpi_id: this.kpi_id
         }
       ],
@@ -107,6 +113,7 @@ export default {
       let fields = [
         { key: 'date' },
         { key: 'value' },
+        { key: 'comment' },
       ]
       if (this.showActions) {
         fields.push({ key: 'actions', label: '', filter: false, sorter: false })
@@ -120,6 +127,7 @@ export default {
       this.storeFormData.push({
         date: this.setNextDate(this.lastDate, this.rowsCount - 1),
         value: 0,
+        comment: '',
         kpi_id: this.kpi_id
       })
     },
@@ -134,6 +142,7 @@ export default {
         {
           date: this.kpiValues.length ? this.setNextDate(this.kpiValues[0].date) : new Date().toISOString().split('T')[0],
           value: 0,
+          comment: '',
           kpi_id: this.kpi_id
         }
       ]
@@ -171,6 +180,7 @@ export default {
         {
           date: targetValue.date,
           value: targetValue.value,
+          comment: targetValue.comment,
           kpi_id: targetValue.kpi_id,
           id: targetValue.id
         }
@@ -184,3 +194,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.card-body >>> textarea {
+  height: 35px;
+}
+</style>

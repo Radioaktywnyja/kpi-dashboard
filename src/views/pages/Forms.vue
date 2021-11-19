@@ -10,7 +10,7 @@
                 <CInput label="Filter KPIs:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model="filterKpis" placeholder="Enter KPI name" class="ml-3 text-nowrap" />
                 <CInput type="number" label="Items per page:" :horizontal="{ label: 'px-0 mr-2', input: 'px-0'}" v-model.number="itemsPerPage" class="ml-3 text-nowrap" />
               </CCol>
-              <CCol lg="6" v-for="kpi in kpis(team.id)" :key="kpi.id">
+              <CCol lg="12" v-for="kpi in kpis(team.id)" :key="kpi.id">
                 <ValuesForm :kpi_id="kpi.id" :items_per_page="itemsPerPage" />
               </CCol>
             </CRow>

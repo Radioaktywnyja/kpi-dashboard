@@ -14,6 +14,7 @@
 
 <script>
 import { CChartBar, CChartLine } from '@coreui/vue-chartjs'
+import { customTooltips } from '../../assets/js/coreui-chartjs.js'
 import { getStyle, hexToRgba } from '@coreui/utils/src'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
@@ -110,6 +111,9 @@ export default {
     values() {
       return this.rangedData.map(item => item.value);
     },
+    comments() {
+      return this.rangedData.map(item => item.comment);
+    },
     maxVal() {
       return Math.max(...this.values, this.kpiData.target);
     },
@@ -188,6 +192,7 @@ export default {
       ]
     },
     defaultOptions () {
+      let that = this
       return {
 
         maintainAspectRatio: false,
@@ -230,6 +235,38 @@ export default {
             hoverRadius: 4,
             hoverBorderWidth: 3
           }
+        },
+        tooltips: {
+          enabled: false,
+          custom: customTooltips,
+          intersect: true,
+          mode: 'index',
+          position: 'nearest',
+          callbacks: {
+            title(tooltipItem) {
+              let title = tooltipItem[0].xLabel
+              if (that.comments[tooltipItem[0].index]) {
+                title += '<div>Comment: ' + that.comments[tooltipItem[0].index] + '</div>'
+              }
+              return title 
+            },
+            labelColor(tooltipItem, chart) {
+              function getValue(prop) {
+                return typeof prop === 'object' ? prop[tooltipItem.index] : prop
+              }
+              const dataset = chart.data.datasets[tooltipItem.datasetIndex]
+              //tooltipLabelColor is coreUI custom prop used only here
+              const backgroundColor = getValue(
+                dataset.tooltipLabelColor ||
+                dataset.pointHoverBackgroundColor ||
+                dataset.borderColor ||
+                dataset.backgroundColor
+              )
+              return {
+                backgroundColor
+              }
+            }
+          }
         }
       }
     }
@@ -264,7 +301,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 @media (min-width: 800px) {
   .chart-box {
     margin-top: -42px;
