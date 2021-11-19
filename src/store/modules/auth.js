@@ -4,12 +4,19 @@ export const state = {
     user: {
         email: localStorage.getItem('user_email') || null,
         token: localStorage.getItem('access_token') || null,
+        refreshToken: localStorage.getItem('refresh_token') || null,
         isAdmin: localStorage.getItem('is_admin') || false
     }
 }
 
 export const getters = {
-    isAuthenticated: state => !!state.user.email
+    isAuthenticated: state => !!state.user.email,
+    getTokens: state => {
+        return {
+            token: state.user.token,
+            refreshToken: state.user.refreshToken,
+        }
+    }
 }
 
 export const mutations = {
@@ -19,10 +26,18 @@ export const mutations = {
     SET_ADMIN(state){
         state.user.isAdmin = true
     },
+    REFRESH_TOKENS(state, tokens) {
+        state.user = {
+            ...state.user,
+            token: tokens.access_token,
+            refreshToken: tokens.refresh_token
+        }
+    },
     LOG_OUT(state){
         state.user = {
             email: null,
-            token: null
+            token: null,
+            refreshToken: null
         }
     },
 
@@ -32,11 +47,14 @@ export const actions = {
     async LogIn({commit}, User) {
         await axios.post('auth/login', User).then(response => {
             const token = response.data.data.access_token
+            const refreshToken = response.data.data.refresh_token
             localStorage.setItem('access_token', token)
+            localStorage.setItem('refresh_token', refreshToken)
             localStorage.setItem('user_email', User.email)
             let userData = {
                 email: User.email,
                 token: token,
+                refreshToken: refreshToken,
                 isAdmin: false
             }
             commit('SET_USER', userData)
@@ -58,6 +76,11 @@ export const actions = {
         .catch(error => {
             throw new Error(`API ${error}`);
         });
+    },
+    refreshTokens({commit}, Tokens) {
+        localStorage.setItem('access_token', Tokens.access_token)
+        localStorage.setItem('refresh_token', Tokens.refresh_token)
+        commit('REFRESH_TOKENS', Tokens)
     },
     async LogOut({commit}) {
         localStorage.removeItem('access_token')
