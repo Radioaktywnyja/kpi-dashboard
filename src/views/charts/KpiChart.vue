@@ -129,6 +129,8 @@ export default {
     },
     showPeriod() {
       switch (this.kpiData.frequency) {
+        case 'yearly': return 1080;
+        case 'quarterly': return 360;
         case 'monthly': return 180;
         case 'weekly': return 90;
         default: return 30;
@@ -278,6 +280,12 @@ export default {
     setNextDate(date, counter = 1) {
       let lastDate = new Date(date)
       switch (this.kpiData.frequency) {
+        case 'yearly':  
+          lastDate.setMonth(lastDate.getMonth() + (12*counter))
+          break
+        case 'quarterly':  
+          lastDate.setMonth(lastDate.getMonth() + (3*counter))
+          break
         case 'monthly':  
           lastDate.setMonth(lastDate.getMonth() + (1*counter))
           break

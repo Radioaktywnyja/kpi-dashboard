@@ -76,7 +76,7 @@ export const actions = {
       {itemName: 'sections', activeName: 'activeSectionId'}, 
     ];
     items.map(async stateName => {
-      let target = 'items/' + stateName;
+      let target = 'items/' + stateName + '?filter[status]=published';
       await axios.get(target, 
         { params: 
           { access_token: rootState.auth.user.token } 

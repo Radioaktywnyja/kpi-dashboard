@@ -52,6 +52,7 @@ export default {
           { key: 'actions', label: '', filter: false, sorter: false }
         ],
         storeFormData: {
+          status: "published",
           name: "",
           section_id: null
         },
@@ -75,6 +76,7 @@ export default {
       reset() {
         this.isEdit = false
         this.storeFormData = {
+          status: "published",
           name: "",
           section_id: this.activeSectionId,
         }

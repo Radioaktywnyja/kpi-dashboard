@@ -118,8 +118,9 @@ export default {
           { key: 'actions', label: '', filter: false, sorter: false },
         ],
         horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
-        frequencyOptions: ['daily', 'weekly', 'monthly'],
+        frequencyOptions: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
         storeFormData: {
+          status: "published",
           name: "",
           frequency: "daily",
           owner: 1,
@@ -169,6 +170,7 @@ export default {
       reset() {
         this.isEdit = false
         this.storeFormData = {
+          status: "published",
           name: "",
           frequency: "daily",
           owner: 1,

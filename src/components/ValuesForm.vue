@@ -69,6 +69,7 @@ export default {
       horizontalInput: { label: 'pl-0', input: 'pr-0 flex-grow-1'},
       storeFormData: [
         {
+          status: "published",
           date: new Date().toISOString().split('T')[0],
           value: 0,
           comment: '',
@@ -125,6 +126,7 @@ export default {
     addValue() {
       this.rowsCount++
       this.storeFormData.push({
+        status: "published",
         date: this.setNextDate(this.lastDate, this.rowsCount - 1),
         value: 0,
         comment: '',
@@ -140,6 +142,7 @@ export default {
       this.rowsCount = 1
       this.storeFormData = [
         {
+          status: "published",
           date: this.kpiValues.length ? this.setNextDate(this.kpiValues[0].date) : new Date().toISOString().split('T')[0],
           value: 0,
           comment: '',
@@ -150,6 +153,12 @@ export default {
     setNextDate(date, counter = 1) {
       let lastDate = new Date(date)
       switch (this.kpiData.frequency) {
+        case 'yearly':  
+          lastDate.setMonth(lastDate.getMonth() + (12*counter))
+          break
+        case 'quarterly':  
+          lastDate.setMonth(lastDate.getMonth() + (3*counter))
+          break
         case 'monthly':  
           lastDate.setMonth(lastDate.getMonth() + (1*counter))
           break
