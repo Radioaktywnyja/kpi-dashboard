@@ -47,42 +47,7 @@ export default {
       if (!this.kpiData.is_computed) {
         return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1)
       } else {
-        let that = this
-        let kpiIds = that.kpiData.computed_kpis.map(item => item.kpi_id)
-        let rawValues = that.getValuesByMultipleKpis(kpiIds).sort((a, b) => b.date < a.date ? 1 : -1)
-        let lastDate = ''
-        let nextDate = ''
-        let computedValues = rawValues.reduce(function (acc, obj) {
-          if (acc.length == 0 ) {
-            acc.push(obj)
-            acc[0].total = 1
-            acc[0].sum = obj.value
-            lastDate = obj.date
-            nextDate = that.setNextDate(lastDate)
-          } else if (obj.date <= lastDate) {
-            acc[acc.length - 1].total += 1
-            acc[acc.length - 1].sum += obj.value
-            acc[acc.length - 1].date = obj.date
-            acc[acc.length - 1].value = Math.round((acc[acc.length - 1].sum / acc[acc.length - 1].total) * 100) / 100
-          } else {
-            if (obj.date > nextDate) {
-              while (obj.date > nextDate) {
-                lastDate = nextDate
-                nextDate = that.setNextDate(lastDate)
-              }
-            }
-            acc.push(obj)
-            acc[acc.length - 1].total = 1
-            acc[acc.length - 1].sum = obj.value
-            acc[acc.length - 1].date = nextDate
-            lastDate = nextDate
-            if (obj.date == nextDate) {
-              nextDate = that.setNextDate(lastDate)
-            }
-          }
-          return acc
-        }, [])
-        return computedValues
+        return this.setComputedValues()
       }
     },
     startDate: {
@@ -156,41 +121,9 @@ export default {
       }
 
       return [
-        {
-          label: 'KPI target',
-          backgroundColor: 'transparent',
-          borderColor: brandDanger,
-          pointHoverBackgroundColor: brandDanger,
-          borderWidth: 1,
-          borderDash: [8, 5],
-          data: target,
-          type: 'line',
-          xAxisID: 'targetAxis',
-          pointRadius: this.chartType == 'CChartBar' ? 0 : 4,
-          hoverRadius: this.chartType == 'CChartBar' ? 0 : 4
-        },
-        {
-          label: 'KPI average',
-          backgroundColor: 'transparent',
-          borderColor: brandSuccess,
-          pointHoverBackgroundColor: brandSuccess,
-          borderWidth: 1,
-          borderDash: [8, 5],
-          data: average,
-          type: 'line',
-          xAxisID: 'targetAxis',
-          pointRadius: this.chartType == 'CChartBar' ? 0 : 4,
-          hoverRadius: this.chartType == 'CChartBar' ? 0 : 4
-        },
-        {
-          label: 'KPI value',
-          backgroundColor: hexToRgba(brandInfo, 10),
-          borderColor: brandInfo,
-          pointHoverBackgroundColor: brandInfo,
-          borderWidth: 2,
-          data: this.values,
-          xAxisID: 'mainAxis'
-        }
+        this.setLineChartDataset('KPI target', brandDanger, target, 'targetAxis'),
+        this.setLineChartDataset('KPI average', brandSuccess, average, 'targetAxis'),
+        this.setBarChartDataset('KPI value', brandInfo, this.values, 'mainAxis'),
       ]
     },
     defaultOptions () {
@@ -296,6 +229,70 @@ export default {
       }
       return lastDate.toISOString().split('T')[0]
     },
+    setComputedValues() {
+      let that = this
+      let kpiIds = that.kpiData.computed_kpis.map(item => item.kpi_id)
+      let rawValues = that.getValuesByMultipleKpis(kpiIds).sort((a, b) => b.date < a.date ? 1 : -1)
+      let lastDate = ''
+      let nextDate = ''
+      let computedValues = rawValues.reduce(function (acc, obj) {
+        if (acc.length == 0 ) {
+          acc.push(obj)
+          acc[0].total = 1
+          acc[0].sum = obj.value
+          lastDate = obj.date
+          nextDate = that.setNextDate(lastDate)
+        } else if (obj.date <= lastDate) {
+          acc[acc.length - 1].total += 1
+          acc[acc.length - 1].sum += obj.value
+          acc[acc.length - 1].date = obj.date
+          acc[acc.length - 1].value = Math.round((acc[acc.length - 1].sum / acc[acc.length - 1].total) * 100) / 100
+        } else {
+          if (obj.date > nextDate) {
+            while (obj.date > nextDate) {
+              lastDate = nextDate
+              nextDate = that.setNextDate(lastDate)
+            }
+          }
+          acc.push(obj)
+          acc[acc.length - 1].total = 1
+          acc[acc.length - 1].sum = obj.value
+          acc[acc.length - 1].date = nextDate
+          lastDate = nextDate
+          if (obj.date == nextDate) {
+            nextDate = that.setNextDate(lastDate)
+          }
+        }
+        return acc
+      }, [])
+      return computedValues
+    },
+    setLineChartDataset(label, color, data, xAxisID) {
+      return {
+        label: label,
+        backgroundColor: 'transparent',
+        borderColor: color,
+        pointHoverBackgroundColor: color,
+        borderWidth: 1,
+        borderDash: [8, 5],
+        data: data,
+        type: 'line',
+        xAxisID: xAxisID,
+        pointRadius: this.chartType == 'CChartLine' ? 4 : 0,
+        hoverRadius: this.chartType == 'CChartLine' ? 4 : 0
+      }
+    },
+    setBarChartDataset(label, color, data, xAxisID) {
+      return {
+        label: label,
+        backgroundColor: hexToRgba(color, 10),
+        borderColor: color,
+        pointHoverBackgroundColor: color,
+        borderWidth: 2,
+        data: data,
+        xAxisID: xAxisID
+      }
+    }
   },
   mounted() {
     let today = new Date();
