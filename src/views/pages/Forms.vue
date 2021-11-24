@@ -80,7 +80,7 @@ export default {
       let kpis = this.getKpiByTeam(id);
       if (this.hideAutomatic) {
         kpis = kpis.filter((item) => {
-          return item.is_computed == false
+          return item.type != 'computed'
         })
       }
       if (this.filterKpis) {

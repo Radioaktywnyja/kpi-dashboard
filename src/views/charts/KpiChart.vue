@@ -44,10 +44,10 @@ export default {
       return this.getItemById({name: 'kpis', id: this.kpi_id});
     },
     kpiValues() {
-      if (!this.kpiData.is_computed) {
-        return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1)
-      } else {
-        return this.setComputedValues()
+      switch (this.kpiData.type) {
+        case 'computed': return this.setComputedValues();
+        case 'stacked': return this.setStackedValues();
+        default: return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1);
       }
     },
     startDate: {
@@ -73,21 +73,44 @@ export default {
         return startCheck && endCheck;
       });
     },
+    isStacked() {
+      return this.kpiData.type == 'stacked'
+    },
     values() {
-      return this.rangedData.map(item => item.value);
+      if (this.isStacked) {
+        return this.rangedData.map(item => item.value)
+      } else {
+        return this.rangedData.map(item => parseFloat(item.value))
+      }
     },
     comments() {
       return this.rangedData.map(item => item.comment);
     },
     maxVal() {
-      return Math.max(...this.values, this.kpiData.target);
+      if (this.isStacked) {
+        let valuesArr = this.values
+        let summedArr = valuesArr.map(item => {
+          return item.reduce((a,b) => parseFloat(a) + parseFloat(b) ,0)
+        })
+        return Math.max(...summedArr);
+      } else {
+        return Math.max(...this.values, this.kpiData.target);
+      }
     },
     minVal() {
-      return Math.min(...this.values, this.kpiData.target);
+      if (this.isStacked) {
+        return 0
+      } else {
+        return Math.min(...this.values, this.kpiData.target);
+      }
     },
     avgVal() {
-      let valuesArr = this.values
-      return Math.round((valuesArr.reduce((a,b) => a + b ,0) / valuesArr.length) * 100) / 100
+      if (this.isStacked) {
+        return null
+      } else {
+        let valuesArr = this.values
+        return Math.round((valuesArr.reduce((a,b) => a + b ,0) / valuesArr.length) * 100) / 100
+      }
     },
     dates() {
       return this.rangedData.map(item => item.date);
@@ -108,23 +131,34 @@ export default {
       return this.chartType == 'CChartBar' ? 'Bar' : 'Line';
     },
     dataset () {
-      const brandInfo = getStyle('info') || '#20a8d8'
-      const brandDanger = getStyle('danger') || '#f72b29'
-      const brandSuccess = getStyle('success') || '#28825b'
+      if (this.isStacked) {
+        let chartsArr = []
+        let stackedValues = this.kpiData.stacked_values
+        for (let i = 0; i < stackedValues.length; i++) {
+          let values = this.values.map(item => { return (item && item[i]) ? parseFloat(item[i]) : null })
+          chartsArr.push(this.setBarChartDataset(stackedValues[i].label, stackedValues[i].color, values, 'mainAxis'))
+        }
+        return chartsArr
+      } else {
+        const brandInfo = getStyle('info') || '#20a8d8'
+        const brandDanger = getStyle('danger') || '#f72b29'
+        const brandSuccess = getStyle('success') || '#28825b'
 
-      const target = []
-      const average = []
+        const target = []
+        const average = []
 
-      for (let i = 0; i <= this.values.length; i++) {
-        target.push(this.kpiData.target)
-        average.push(this.avgVal)
+        for (let i = 0; i <= this.values.length; i++) {
+          target.push(this.kpiData.target)
+          average.push(this.avgVal)
+        }
+
+        return [
+          this.setLineChartDataset('KPI target', brandDanger, target, 'targetAxis'),
+          this.setLineChartDataset('KPI average', brandSuccess, average, 'targetAxis'),
+          this.setBarChartDataset('KPI value', brandInfo, this.values, 'mainAxis'),
+        ]
       }
 
-      return [
-        this.setLineChartDataset('KPI target', brandDanger, target, 'targetAxis'),
-        this.setLineChartDataset('KPI average', brandSuccess, average, 'targetAxis'),
-        this.setBarChartDataset('KPI value', brandInfo, this.values, 'mainAxis'),
-      ]
     },
     defaultOptions () {
       let that = this
@@ -139,7 +173,8 @@ export default {
             id: 'mainAxis',
             gridLines: {
               drawOnChartArea: false
-            }
+            },
+            stacked: this.isStacked,
           }, {
             id: 'targetAxis',
             type: 'category',
@@ -160,7 +195,8 @@ export default {
             },
             gridLines: {
               display: true
-            }
+            },
+            stacked: this.isStacked,
           }]
         },
         elements: {
@@ -199,6 +235,13 @@ export default {
               )
               return {
                 backgroundColor
+              }
+            },
+            afterLabel(tooltipItem) {
+              if (that.isStacked && that.kpiData.stacked_values[tooltipItem.datasetIndex].target) {
+                return 'Target: ' + that.kpiData.stacked_values[tooltipItem.datasetIndex].target
+              } else {
+                return null
               }
             }
           }
@@ -239,12 +282,12 @@ export default {
         if (acc.length == 0 ) {
           acc.push(obj)
           acc[0].total = 1
-          acc[0].sum = obj.value
+          acc[0].sum = parseFloat(obj.value)
           lastDate = obj.date
           nextDate = that.setNextDate(lastDate)
         } else if (obj.date <= lastDate) {
           acc[acc.length - 1].total += 1
-          acc[acc.length - 1].sum += obj.value
+          acc[acc.length - 1].sum += parseFloat(obj.value)
           acc[acc.length - 1].date = obj.date
           acc[acc.length - 1].value = Math.round((acc[acc.length - 1].sum / acc[acc.length - 1].total) * 100) / 100
         } else {
@@ -256,7 +299,7 @@ export default {
           }
           acc.push(obj)
           acc[acc.length - 1].total = 1
-          acc[acc.length - 1].sum = obj.value
+          acc[acc.length - 1].sum = parseFloat(obj.value)
           acc[acc.length - 1].date = nextDate
           lastDate = nextDate
           if (obj.date == nextDate) {
@@ -266,6 +309,16 @@ export default {
         return acc
       }, [])
       return computedValues
+    },
+    setStackedValues() {
+      let sortedValues = this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date < a.date ? 1 : -1)
+      let values = sortedValues.map((item) => {
+        if (typeof item.value === 'string') {
+          item.value = JSON.parse(item.value)
+        }
+        return item
+      })
+      return values
     },
     setLineChartDataset(label, color, data, xAxisID) {
       return {

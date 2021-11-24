@@ -32,10 +32,13 @@
           <span v-if="!isEdit" class="font-weight-bold mb-2 d-block">Add new Values</span>
           <span v-if="isEdit" class="font-weight-bold mb-2 d-block">Edit Value</span>
           <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in rowsCount" :key="n">
-            <CCol sm="10" md="11" class="px-2 py-2 mb-2 d-flex flex-wrap justify-content-between bg-light rounded">
+            <CCol sm="10" md="11" class="p-2 mb-2 d-flex flex-wrap justify-content-between bg-light rounded">
               <CInput label="Date" type="date" :horizontal="horizontalInput" v-model="storeFormData[index].date" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
-              <CInput label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
+              <CInput v-if="!isStacked" label="Value" :horizontal="horizontalInput" v-model="storeFormData[index].value" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
               <CTextarea label="Comment" :horizontal="horizontalInput" v-model="storeFormData[index].comment" class="my-1 mx-0 pr-3 flex-grow-1" />
+              <div class="d-inline-flex flex-wrap flex-md-nowrap flex-grow-1" v-if="isStacked">
+                <CInput v-for="(item,i) in kpiData.stacked_values" :key="item.label" :label="item.label" :horizontal="horizontalInput" v-model="storeFormData[index].value[i]" class="my-1 mx-0 pr-3 flex-grow-1" />
+              </div>
             </CCol>
             <CCol v-if="!isEdit" sm="2" md="1" class="p-2 d-flex">
               <CButton color="secondary" size="sm" class="mr-2" @click.prevent="addValue">+</CButton>
@@ -91,7 +94,18 @@ export default {
       return this.getItemById({name: 'kpis', id: this.kpi_id});
     },
     kpiValues() {
-      return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date > a.date ? 1 : -1);
+      let that = this
+      return this.getValuesByKpi(this.kpi_id).sort((a, b) => b.date > a.date ? 1 : -1).map((item) => {
+        if (that.isStacked) {
+          if (typeof item.value === 'string') {
+            item.value = JSON.parse(item.value)
+          }
+          that.kpiData.stacked_values.forEach((stack, i) => {
+            item[stack.label] = item.value[i]
+          })
+        }
+        return item
+      });
     },
     storePayload() {
       if (this.isEdit) {
@@ -113,13 +127,22 @@ export default {
     fields() {
       let fields = [
         { key: 'date' },
-        { key: 'value' },
         { key: 'comment' },
       ]
+      if (this.isStacked) {
+        this.kpiData.stacked_values.forEach((stack,i) => {
+          fields.splice(1+i, 0, { key: stack.label })
+        })
+      } else {
+        fields.splice(1, 0, { key: 'value' })
+      }
       if (this.showActions) {
         fields.push({ key: 'actions', label: '', filter: false, sorter: false })
       }
       return fields
+    },
+    isStacked() {
+      return this.kpiData.type == "stacked"
     }
   },
   methods: {
@@ -144,7 +167,7 @@ export default {
         {
           status: "published",
           date: this.kpiValues.length ? this.setNextDate(this.kpiValues[0].date) : new Date().toISOString().split('T')[0],
-          value: 0,
+          value: this.isStacked ? Array(this.kpiData.stacked_values.length).fill(0) : 0,
           comment: '',
           kpi_id: this.kpi_id
         }
@@ -170,6 +193,7 @@ export default {
       return lastDate.toISOString().split('T')[0]
     },
     storeValues() {
+      this.stringifyValues()
       if (this.isEdit) {
         this.$store.dispatch('kpiData/updateApiState', this.storePayload)
           .then(() => {
@@ -188,18 +212,30 @@ export default {
       this.storeFormData = [
         {
           date: targetValue.date,
-          value: targetValue.value,
+          value: (typeof targetValue.value === 'string') ? JSON.parse(targetValue.value) : targetValue.value,
           comment: targetValue.comment,
           kpi_id: targetValue.kpi_id,
           id: targetValue.id
         }
       ]
+    },
+    stringifyValues() {
+      if (this.isStacked) {
+        this.storeFormData.map((item) => {
+          item.value = JSON.stringify(item.value)
+        })
+      } else {
+        this.storeFormData.value = JSON.stringify(this.storeFormData.value)
+      }
     }
   },
   created() {
     if (this.kpiValues.length) {
       this.storeFormData[0].date = this.setNextDate(this.kpiValues[0].date)
     } 
+    if (this.isStacked) {
+      this.storeFormData[0].value = Array(this.kpiData.stacked_values.length).fill(0)
+    }
   }
 }
 </script>

@@ -21,14 +21,14 @@
           <CCollapse :show="openedDetails == index" :duration="300">
             <CCardBody>
               <CRow>
-                <CCol sm="12" :class="item.is_computed ? 'col-md-6 col-lg-8 mb-3 mb-md-0' : ''">
+                <CCol sm="12" :class="item.type == 'computed' ? 'col-md-6 col-lg-8 mb-3 mb-md-0' : ''">
                   <h6 class="font-weight-bold">Definition:</h6>
                   <div class="small text-muted">
                     <span v-if="item.definition">{{ item.definition }}</span>
                     <i v-else>empty</i>
                   </div>
                 </CCol>
-                <CCol v-if="item.is_computed" sm="12" md="6" lg="4">
+                <CCol v-if="item.type == 'computed'" sm="12" md="6" lg="4">
                   <h6 class="font-weight-bold">Related KPIs:</h6>
                   <div class="small text-muted">
                     <ul class="mb-0">
@@ -65,12 +65,12 @@
             <CInput v-model="storeFormData.unit" label="Unit" class="m-0" />
           </CCol>
           <CCol sm="6" md="4" xl="2" class="px-2 mb-2">
-            <CInput v-model="storeFormData.target" label="Target" class="m-0" />
+            <CInput v-if="!isStacked" v-model="storeFormData.target" label="Target" class="m-0" />
           </CCol>
           <CCol sm="6" md="4" xl="2" class="px-2 mb-2">
-            <CSelect :value.sync="storeFormData.is_computed" label="Is computed" :options="[false, true]" class="m-0" />
+            <CSelect :value.sync="storeFormData.type" label="Type" :options="typeOptions" class="m-0" @change="changeKpiType()" />
           </CCol>
-          <CCol v-if="storeFormData.is_computed" sm="12" xl="4" class="px-2 mb-2">
+          <CCol v-if="storeFormData.type == 'computed'" sm="12" xl="4" class="px-2 mb-2">
             <KPISelect :computed_kpis="storeFormData.computed_kpis" @syncSelectedKpi="syncSelectedKpi" />
           </CCol>
           <CCol sm="12" md="6" class="px-2 mb-2">
@@ -85,6 +85,20 @@
               <CCol col="3" sm="2" class="px-2 d-flex">
                 <CButton color="secondary" size="sm" class="ml-2 mr-2" @click.prevent="addEditor">+</CButton>
                 <CButton v-if="index != 0" color="secondary" size="sm" class="ml-1" @click.prevent="reduceEditor(index)"><CIcon name="cil-trash" size="sm"/></CButton>
+              </CCol>
+            </CRow>
+          </CCol>
+          <CCol col="12" v-if="isStacked">
+            <label>Stacked values</label>
+            <CRow class="form-group align-items-center mx-0 mb-1" v-for="(n,index) in storeFormData.stacked_values.length" :key="n">
+              <CCol sm="10" class="p-2 mb-2 d-flex flex-wrap-reverse justify-content-between bg-light rounded">
+                <CInput v-model="storeFormData.stacked_values[index].label" label="Label" :horizontal="horizontalInput" placeholder="Enter label" class="my-1 mx-0 pr-3 flex-grow-1" />
+                <CInput v-model="storeFormData.stacked_values[index].color" label="Color" :horizontal="horizontalInput" placeholder="Select color" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
+                <CInput v-model="storeFormData.stacked_values[index].target" label="Target" :horizontal="horizontalInput" placeholder="Enter target" class="my-1 mx-0 pr-3 flex-grow-1 flex-lg-grow-0" />
+              </CCol>
+              <CCol sm="2" class="p-2 d-flex">
+                <CButton color="secondary" size="sm" class="mr-2" @click.prevent="addStackedValue">+</CButton>
+                <CButton v-if="index != 0" color="secondary" size="sm" class="ml-1" @click.prevent="reduceStackedValue(index)"><CIcon name="cil-trash" size="sm"/></CButton>
               </CCol>
             </CRow>
           </CCol>
@@ -114,23 +128,25 @@ export default {
           { key: 'frequency' },
           { key: 'unit' },
           { key: 'target' },
-          { key: 'is_computed', label: 'Is computed' },
+          { key: 'type' },
           { key: 'actions', label: '', filter: false, sorter: false },
         ],
-        horizontalInput: { label: 'col-sm-3 px-0', input: 'col-sm-9 px-0'},
+        horizontalInput: { label: 'pl-0', input: 'pr-0 flex-grow-1'},
         frequencyOptions: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
+        typeOptions: ['standard', 'computed', 'stacked'],
         storeFormData: {
           status: "published",
           name: "",
           frequency: "daily",
           owner: 1,
           team_id: this.team_id,
-          target: "",
+          target: null,
           unit: "",
           definition: "",
-          is_computed: false,
+          type: "standard",
           computed_kpis: [],
-          editors_emails: [{editors_email: this.$store.state.auth.user.email}]
+          editors_emails: [{editors_email: this.$store.state.auth.user.email}],
+          stacked_values: null
         },
         isEdit: false,
         openedDetails: null
@@ -164,6 +180,9 @@ export default {
       },
       storePayload() {
         return { name: 'kpis', data: this.storeFormData }
+      },
+      isStacked() {
+        return this.storeFormData.type == "stacked"
       }
     },
     methods: {
@@ -175,13 +194,16 @@ export default {
           frequency: "daily",
           owner: 1,
           team_id: this.team_id,
-          target: "",
+          target: null,
           unit: "",
           definition: "",
-          is_computed: false,
+          type: "standard",
           computed_kpis: [],
           editors_emails: [{editors_email: this.userEmail}]
         }
+        if (this.isStacked) {
+          this.storeFormData.stacked_values = [{ label: '', color: '', target: null }]
+        } 
       },
       storeKpi() {
         this.validateEmails()
@@ -195,7 +217,6 @@ export default {
       editItem(id) {
         this.isEdit = true
         let targetKpi = this.getItemById({name: 'kpis', id: id})
-        console.log(targetKpi.editors_emails)
         this.storeFormData = {
           name: targetKpi.name,
           frequency: targetKpi.frequency,
@@ -204,9 +225,10 @@ export default {
           target: targetKpi.target,
           unit: targetKpi.unit,
           definition: targetKpi.definition,
-          is_computed: targetKpi.is_computed,
+          type: targetKpi.type,
           computed_kpis: targetKpi.computed_kpis,
           editors_emails: JSON.parse(JSON.stringify(targetKpi.editors_emails)),
+          stacked_values: JSON.parse(JSON.stringify(targetKpi.stacked_values)),
           id: targetKpi.id
         }
       },
@@ -231,11 +253,24 @@ export default {
       reduceEditor(index) {
         this.storeFormData.editors_emails.splice(index, 1)
       },
+      addStackedValue() {
+        this.storeFormData.stacked_values.push({label: '', color: '', target: null})
+      },
+      reduceStackedValue(index) {
+        this.storeFormData.stacked_values.splice(index, 1)
+      },
       validateEmails() {
         const emailRegex = /\S+@\S+\.\S+/
         this.storeFormData.editors_emails = this.storeFormData.editors_emails.filter((item) => {
           return emailRegex.test(item.editors_email)
         })
+      },
+      changeKpiType() {
+        if (this.isStacked) {
+          this.storeFormData.stacked_values = [{ label: '', color: '', target: 0 }]
+        } else {
+          this.storeFormData.stacked_values = null
+        }
       }
     }
 }

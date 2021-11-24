@@ -119,6 +119,14 @@
           tooltipBodyItem.appendChild(_tooltipBodyItemValue);
         }
 
+        // add afterLabel text 
+        if (tooltipModel.body[i].after.length) {
+          var tooltipBodyItemAfter = document.createElement(Selector.SPAN);
+          tooltipBodyItemAfter.className = 'ml-2';
+          tooltipBodyItemAfter.innerHTML = '(' + tooltipModel.body[i].after[0] + ')';
+          tooltipBodyItem.appendChild(tooltipBodyItemAfter);
+        }
+
         tooltipBody.appendChild(tooltipBodyItem);
       });
       tooltip.innerHTML = '';
